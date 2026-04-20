@@ -170,13 +170,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 👤 Author
-
-**RBRIZZ Robotics**  
-Built with ❤️ for the robotics community.
-
----
-
 <div align="center">
 
 ⭐ If this tool helped your team, give it a star!
