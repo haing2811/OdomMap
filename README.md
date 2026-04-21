@@ -12,7 +12,7 @@ Measure paths, calculate wheel rotations, and plan robot movement — all on an 
 
 ## 📸 Overview
 
-RBRIZZ Distance Map is a browser-based tool that overlays competition field images and lets you:
+OdomMap is a browser-based tool that overlays competition field images and lets you:
 
 - 📏 Click to draw measurement lines across the field
 - 🔄 Instantly calculate wheel rotations and degrees for any path
