@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OdomMap</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F0C1F">
     <link rel="icon" type="image/png" href="Logo/map.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -87,7 +89,9 @@
         .slr-icon {
             height: 56px;
         }
-
+        .astro-icon{
+            height: 56px;
+        }
         .header-title {
             font-size: 1.2rem;
             color: #4dd0e1;
@@ -337,6 +341,30 @@
             background: #4dd0e1;
             color: #000080;
         }
+
+        #saved-routes-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-track {
+            background: #0d1b2a;
+            border-radius: 4px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-thumb {
+            background: #4dd0e1;
+            border-radius: 4px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-thumb:hover {
+            background: #00bcd4;
+        }
+
+        /* Firefox scrollbar support */
+        #saved-routes-list {
+            scrollbar-width: thin;
+            scrollbar-color: #4dd0e1 #0d1b2a;
+        }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -346,9 +374,10 @@
     </div>
 
     <header id="header">
-        <h1><img src="Logo/iconrb.png" alt="RBRIZZ"><span class="inspired-by">inspired by</span><img src="Logo/slr.jpg" class="slr-icon" alt=""></h1>
+        <h1><img src="Logo/iconrb.png" alt="RBRIZZ"><span class="inspired-by">inspired by</span><img src="Logo/slr.jpg" class="slr-icon" alt=""><img src="Logo/astro.png" class="astro-icon" alt=""></h1>
         <div class="header-title">OdometryMap</div>
         <div class="controls">
+            <button id="btn-install" style="display: none; padding: 6px 12px; background: #4dd0e1; color: #000080; border: none; border-radius: 5px; font-weight: bold; font-size: 0.8rem; cursor: pointer;">Install App</button>
             <div class="field-select-group">
                 <div class="control-group">
                     <label for="year-select">Year:</label>
@@ -393,13 +422,21 @@
                 <h3>Display</h3>
                 <div class="toggle-group">
                     <div class="toggle-item">
-                        <input type="checkbox" id="show-odometry">
-                        <label for="show-odometry">Odometry Mode</label>
+                        <input type="radio" name="mode" id="mode-normal" value="normal" checked>
+                        <label for="mode-normal">Normal Mode</label>
                     </div>
                     <div class="toggle-item">
-                        <input type="checkbox" id="show-triangle" checked>
-                        <label for="show-triangle">Show Right Triangle</label>
+                        <input type="radio" name="mode" id="mode-odometry" value="odometry">
+                        <label for="mode-odometry">Odometry Mode</label>
                     </div>
+                    <div class="toggle-item">
+                        <input type="radio" name="mode" id="mode-route" value="route">
+                        <label for="mode-route">Route Mode</label>
+                    </div>
+                </div>
+                <div class="toggle-item" style="margin-top: 10px;">
+                    <input type="checkbox" id="show-triangle" checked>
+                    <label for="show-triangle">Show Right Triangle</label>
                 </div>
             </div>
 
@@ -434,6 +471,34 @@
                     <label style="font-size: 0.85rem; color: #ffffff;">Grid Opacity: <span id="grid-opacity-value">40%</span></label>
                     <input type="range" id="grid-opacity-slider" min="0" max="100" value="40" style="width: 100%; margin-top: 4px;">
                 </div>
+            </div>
+
+            <div class="sidebar-section" id="route-info" style="display: none;">
+                <h3>Route Planning</h3>
+                <div class="measurement-item">
+                    <span>Points:</span>
+                    <span class="measurement-value" id="route-point-count">0</span>
+                </div>
+                <div id="route-buttons" style="margin-top: 10px; display: none;">
+                    <button class="btn btn-primary" id="btn-save-route" style="margin-bottom: 5px;">Save Route</button>
+                    <button class="btn btn-danger" id="btn-cancel-route">Cancel</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="saved-routes-section" style="display: none;">
+                <h3>Saved Routes</h3>
+                <div id="saved-routes-list" style="height: 200px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid #4dd0e1; border-radius: 5px; padding: 5px;"></div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-danger" id="btn-delete-all-routes" style="flex:1; padding: 5px; font-size: 0.8rem;">Delete All</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="route-loaded-info" style="display: none;">
+                <h3>Loaded Route</h3>
+                <div id="loaded-route-name" style="color: #ff9900; font-weight: bold; margin-bottom: 5px;"></div>
+                <button class="btn" id="btn-unload-route" style="padding: 5px; font-size: 0.8rem; background: #4dd0e1; color: #000080; font-weight: bold;">
+                    Unload Route
+                </button>
             </div>
 
             <div class="sidebar-section" id="measurements">
@@ -528,7 +593,7 @@
         let fieldImg = null;
 
         // Display toggles
-        let showOdometry = false;
+        let currentMode = 'normal'; // 'normal', 'odometry', 'route'
         let showTriangle = true;
         const showDistance = true;
         const showAngle = true;
@@ -541,6 +606,14 @@
         let odometryPoints = [];
         let odometryLines = [];
         let odometryAddMode = null; // 'point' or 'line'
+
+        // Route state
+        let routeOrigin = null;
+        let routePoints = [];
+        let routeLines = [];
+        let routeIsPlanning = false;
+        let routePendingLine = null;
+        let savedRoutes = [];
 
         // Recording state
         let isRecording = false;
@@ -731,7 +804,7 @@
             }
 
             // Draw grid only in odometry mode
-            if (showOdometry) {
+            if (currentMode === 'odometry') {
                 ctx.strokeStyle = COLORS.grid;
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = gridOpacity;
@@ -761,7 +834,7 @@
             ctx.globalAlpha = 1;
 
             // Draw odometry origin if set
-            if (showOdometry && odometryOrigin) {
+            if (currentMode === 'odometry' && odometryOrigin) {
                 // Draw origin point - white outer, black inner (same size as other points)
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
@@ -794,6 +867,32 @@
                 ctx.lineTo(canvasWidth, odometryOrigin.y);
                 ctx.stroke();
                 ctx.setLineDash([]);
+            }
+
+            // Draw "place origin" prompt when origin not yet placed in odometry mode
+            if (currentMode === 'odometry' && !odometryOrigin && isMouseOver) {
+                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Navy text with white outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
+                ctx.fillStyle = '#000080';
+                ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
+            }
+
+            // Draw "place origin" prompt when origin not yet placed in route mode
+            if (currentMode === 'route' && !routeOrigin && isMouseOver) {
+                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Navy text with white outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
+                ctx.fillStyle = '#000080';
+                ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
             }
 
             // Draw odometry points (white outer, navy inner)
@@ -857,7 +956,7 @@
             });
 
             // Draw recorded points during recording mode
-            if (showOdometry && isRecording) {
+            if (currentMode === 'odometry' && isRecording) {
                 recordedPoints.forEach(point => {
                     const canvasX = odometryOrigin.x + toCanvas(point.odoX);
                     const canvasY = odometryOrigin.y - toCanvas(point.odoY);
@@ -951,11 +1050,143 @@
                 drawRobotCursor(mousePos.x, mousePos.y);
 
                 // Draw odometry coordinates if enabled and origin is set
-                if (showOdometry && odometryOrigin) {
+                if (currentMode === 'odometry' && odometryOrigin) {
                     const odoX = toMM(mousePos.x - odometryOrigin.x);
                     const odoY = toMM(odometryOrigin.y - mousePos.y); // Flip Y so higher is positive
                     drawTextWithOutline(`X: ${odoX.toFixed(0)}mm`, mousePos.x, mousePos.y - 20, 12, '#4dd0e1');
                     drawTextWithOutline(`Y: ${odoY.toFixed(0)}mm`, mousePos.x, mousePos.y - 35, 12, '#4dd0e1');
+                }
+            }
+
+            // Draw saved routes ONLY when a route is loaded
+            if (loadedRouteIndex !== null) {
+                const routesToDraw = getSavedRoutes();
+                const route = routesToDraw[loadedRouteIndex];
+                if (route) {
+                    // Draw route origin crosshair
+                    ctx.strokeStyle = '#ff9900';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(route.origin.x, 0);
+                    ctx.lineTo(route.origin.x, canvasHeight);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, route.origin.y);
+                    ctx.lineTo(canvasWidth, route.origin.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Draw route points
+                    route.points.forEach(point => {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = '#ff9900';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    // Draw route lines with triangle
+                    route.lines.forEach(routeLine => {
+                        if (showTriangle) {
+                            const hPoint = { x: routeLine.end.x, y: routeLine.start.y };
+                            const vPoint = { x: routeLine.start.x, y: routeLine.end.y };
+
+                            drawLineWithOutline(routeLine.start.x, routeLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 3, 6);
+                            drawLineWithOutline(routeLine.start.x, routeLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 3, 6);
+                        }
+
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, '#ff9900', 3, 6);
+                    });
+                }
+            }
+
+            // Draw current route being planned
+            if (currentMode === 'route' && routeOrigin) {
+                // Draw origin point - white outer, black inner
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(routeOrigin.x, routeOrigin.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(routeOrigin.x, routeOrigin.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label "origin" above (white outline, black text)
+                drawTextWithOutline('origin', routeOrigin.x, routeOrigin.y - 20, 12, '#000000');
+
+                // Label coordinate "(x, y)" below (white outline, black text)
+                const originOdoX = toMM(routeOrigin.x - routeOrigin.x);
+                const originOdoY = toMM(routeOrigin.y - routeOrigin.y);
+                drawTextWithOutline(`(${originOdoX.toFixed(0)}, ${originOdoY.toFixed(0)})`, routeOrigin.x, routeOrigin.y + 28, 12, '#000000');
+
+                // Draw ALL route lines (including pending)
+                // First draw confirmed lines
+                routeLines.forEach(routeLine => {
+                    if (showTriangle) {
+                        const hPoint = { x: routeLine.end.x, y: routeLine.start.y };
+                        const vPoint = { x: routeLine.start.x, y: routeLine.end.y };
+
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+                    }
+
+                    drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, COLORS.line, 3, 6);
+
+                    // Draw distance label
+                    const dist = calculateDistance(routeLine.start, routeLine.end);
+                    const midX = (routeLine.start.x + routeLine.end.x) / 2;
+                    const midY = (routeLine.start.y + routeLine.end.y) / 2;
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
+                });
+
+                // Draw route points (after origin) - all black with coordinate above, label below
+                routePoints.forEach((point, idx) => {
+                    if (idx === 0) return; // Skip origin point
+
+                    // Draw point - white outer, black inner
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Label coordinate above (white outline, black text)
+                    const odoX = toMM(point.x - routeOrigin.x);
+                    const odoY = toMM(routeOrigin.y - point.y);
+                    drawTextWithOutline(`(${odoX.toFixed(0)}, ${odoY.toFixed(0)})`, point.x, point.y - 16, 12, '#000000');
+
+                    // Label point number below (white outline, black text)
+                    drawTextWithOutline(`P${idx}`, point.x, point.y + 18, 10, '#000000');
+                });
+
+                // Then draw pending line
+                if (routePendingLine) {
+                    if (showTriangle) {
+                        const hPoint = { x: routePendingLine.end.x, y: routePendingLine.start.y };
+                        const vPoint = { x: routePendingLine.start.x, y: routePendingLine.end.y };
+
+                        drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+                        drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+                    }
+
+                    drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, routePendingLine.end.x, routePendingLine.end.y, COLORS.line, 3, 6);
+
+                    // Draw distance label for pending line
+                    const dist = calculateDistance(routePendingLine.start, routePendingLine.end);
+                    const midX = (routePendingLine.start.x + routePendingLine.end.x) / 2;
+                    const midY = (routePendingLine.start.y + routePendingLine.end.y) / 2;
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
                 }
             }
         }
@@ -1084,6 +1315,7 @@
             const year = document.getElementById('year-select').value;
             const category = document.getElementById('category-select').value;
             loadFieldImage(getFieldImageUrl(year, category));
+            updateSavedRoutesList();
         });
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -1096,7 +1328,7 @@
             }
 
             // Update odometry display in sidebar
-            if (showOdometry && odometryOrigin) {
+            if (currentMode === 'odometry' && odometryOrigin) {
                 const odoX = toMM(mousePos.x - odometryOrigin.x);
                 const odoY = toMM(odometryOrigin.y - mousePos.y); // Flip Y so higher is positive
                 document.getElementById('odo-x').textContent = odoX.toFixed(1) + ' mm';
@@ -1109,6 +1341,12 @@
 
         canvas.addEventListener('mouseleave', () => {
             isMouseOver = false;
+            // In route mode, if there's a pending line, finalize it
+            if (currentMode === 'route' && routePendingLine) {
+                routeLines.push(routePendingLine);
+                routePendingLine = null;
+                document.getElementById('route-buttons').style.display = 'flex';
+            }
             draw();
         });
 
@@ -1118,7 +1356,7 @@
             const y = e.clientY - rect.top;
 
             // If odometry mode is on and origin not set, set the origin
-            if (showOdometry && !odometryOrigin) {
+            if (currentMode === 'odometry' && !odometryOrigin) {
                 odometryOrigin = { x, y };
                 document.getElementById('odometry-info').style.display = 'block';
                 draw();
@@ -1126,7 +1364,7 @@
             }
 
             // If recording mode, record point
-            if (showOdometry && isRecording) {
+            if (currentMode === 'odometry' && isRecording) {
                 const odoX = toMM(x - odometryOrigin.x);
                 const odoY = toMM(odometryOrigin.y - y); // Flip Y so higher is positive
                 recordedPoints.push({ odoX, odoY });
@@ -1135,7 +1373,7 @@
             }
 
             // If adding odometry point
-            if (showOdometry && odometryAddMode === 'point') {
+            if (currentMode === 'odometry' && odometryAddMode === 'point') {
                 const odoX = toMM(x - odometryOrigin.x);
                 const odoY = toMM(odometryOrigin.y - y); // Flip Y so higher is positive
                 odometryPoints.push({ x, y, odoX, odoY });
@@ -1144,7 +1382,7 @@
             }
 
             // If adding odometry line
-            if (showOdometry && odometryAddMode === 'line') {
+            if (currentMode === 'odometry' && odometryAddMode === 'line') {
                 if (!startPoint) {
                     startPoint = { x, y };
                 } else {
@@ -1162,6 +1400,39 @@
                     startPoint = null;
                     endPoint = null;
                 }
+                draw();
+                return;
+            }
+
+            // Route mode handling
+            if (currentMode === 'route') {
+                // If route origin not set, set it
+                if (!routeOrigin) {
+                    routeOrigin = { x, y };
+                    routeIsPlanning = true;
+                    routePoints.push({ x, y });
+                    document.getElementById('route-info').style.display = 'block';
+                    document.getElementById('route-point-count').textContent = routePoints.length;
+                    document.getElementById('route-buttons').style.display = 'none';
+                    draw();
+                    return;
+                }
+
+                // If we have a pending line, finalize it first then add new point
+                if (routePendingLine) {
+                    // Push pending line to routeLines to make it permanent
+                    routeLines.push(routePendingLine);
+                }
+
+                // Start a new line from last point to current click
+                const lastPoint = routePoints[routePoints.length - 1];
+                routePendingLine = {
+                    start: { ...lastPoint },
+                    end: { x, y }
+                };
+                routePoints.push({ x, y });
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'flex';
                 draw();
                 return;
             }
@@ -1190,6 +1461,14 @@
             e.preventDefault();
             startPoint = null;
             endPoint = null;
+            if (currentMode === 'route') {
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
+            }
             draw();
         });
 
@@ -1201,10 +1480,26 @@
         });
 
         document.getElementById('btn-delete').addEventListener('click', () => {
-            if (lines.length > 0) {
+            // In route mode, delete last point and line
+            if (currentMode === 'route' && routePoints.length > 0) {
+                // Remove the last point
+                routePoints.pop();
+                // Remove the last line if exists
+                if (routeLines.length > 0) {
+                    routeLines.pop();
+                }
+                // Clear pending line since we added points to it
+                routePendingLine = null;
+                // Update UI
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                if (routePoints.length === 0) {
+                    routeOrigin = null;
+                    document.getElementById('route-buttons').style.display = 'none';
+                }
+            } else if (lines.length > 0) {
                 lines.pop();
-                draw();
             }
+            draw();
         });
 
         document.getElementById('btn-clear-all').addEventListener('click', () => {
@@ -1212,28 +1507,89 @@
             startPoint = null;
             endPoint = null;
             // In odometry mode, clear points and lines but keep origin
-            if (showOdometry) {
+            if (currentMode === 'odometry') {
                 odometryPoints = [];
                 odometryLines = [];
+            }
+            // In route mode, clear all route data
+            if (currentMode === 'route') {
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
             }
             draw();
         });
 
-        // Toggle handlers
-        document.getElementById('show-odometry').addEventListener('change', (e) => {
-            showOdometry = e.target.checked;
-            if (!showOdometry) {
-                // Turn off odometry - clear origin and hide info
+        // Mode toggle handlers
+        document.getElementById('mode-normal').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'normal';
                 odometryOrigin = null;
                 odometryPoints = [];
                 odometryLines = [];
                 odometryAddMode = null;
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routeIsPlanning = false;
+                routePendingLine = null;
+                unloadRoute();
                 document.getElementById('odometry-info').style.display = 'none';
+                document.getElementById('route-info').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
                 document.getElementById('btn-add-odometry-point').classList.remove('btn-active');
                 document.getElementById('btn-add-odometry-line').classList.remove('btn-active');
-            } else {
-                // Enable odometry mode
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+            }
+            draw();
+        });
+
+        document.getElementById('mode-odometry').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'odometry';
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routeIsPlanning = false;
+                routePendingLine = null;
+                document.getElementById('route-info').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
                 document.getElementById('odometry-info').style.display = 'block';
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+            }
+            draw();
+        });
+
+        document.getElementById('mode-route').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'route';
+                odometryOrigin = null;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+                // Clear odometry info but show route info
+                document.getElementById('odometry-info').style.display = 'none';
+                document.getElementById('route-info').style.display = 'block';
+                // Always show saved routes section in route mode and update its contents
+                document.getElementById('saved-routes-section').style.display = 'block';
+                updateSavedRoutesList();
+                // Turn off right triangle in route mode
+                document.getElementById('show-triangle').checked = false;
+                showTriangle = false;
             }
             draw();
         });
@@ -1346,6 +1702,231 @@
                 });
             }
         });
+
+        // Save route button handler
+        document.getElementById('btn-save-route').addEventListener('click', () => {
+            // Save current route (origin must exist)
+            if (routeOrigin && routePoints.length > 0) {
+                // If there's a pending line, add it to route lines
+                if (routePendingLine) {
+                    routeLines.push(routePendingLine);
+                }
+
+                // Auto-generate route name from date/time
+                const now = new Date();
+                const routeName = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+                // Save to localStorage with name and timestamp
+                const routes = getSavedRoutes();
+                routes.push({
+                    name: routeName,
+                    timestamp: now.toISOString(),
+                    origin: { ...routeOrigin },
+                    points: [...routePoints],
+                    lines: [...routeLines]
+                });
+                saveRoutesToStorage(routes);
+
+                // Update saved routes list UI
+                updateSavedRoutesList();
+
+                // Clear current route
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                routeIsPlanning = false;
+
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
+            }
+            draw();
+        });
+
+        // Cancel route button handler
+        document.getElementById('btn-cancel-route').addEventListener('click', () => {
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+            routeIsPlanning = false;
+
+            document.getElementById('route-buttons').style.display = 'none';
+            document.getElementById('route-point-count').textContent = '0';
+            draw();
+        });
+
+        // Update saved routes list UI
+        function getSavedRoutes() {
+            return JSON.parse(localStorage.getItem('rbrizz_saved_routes')) || [];
+        }
+
+        function saveRoutesToStorage(routes) {
+            localStorage.setItem('rbrizz_saved_routes', JSON.stringify(routes));
+        }
+
+        // Route loading state
+        let loadedRouteIndex = null;
+
+        function updateSavedRoutesList() {
+            const list = document.getElementById('saved-routes-list');
+            const section = document.getElementById('saved-routes-section');
+            const routes = getSavedRoutes();
+
+            // Always show the section in route mode
+            section.style.display = 'block';
+
+            list.innerHTML = '';
+
+            if (routes.length === 0) {
+                list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+                return;
+            }
+
+            routes.forEach((route, index) => {
+                const routeDiv = document.createElement('div');
+                routeDiv.style.cssText = 'padding: 8px; background: #0d1b2a; margin-bottom: 5px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
+
+                // Format timestamp to readable date/time
+                const date = new Date(route.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+
+                routeDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #ff9900; font-weight: bold;">${route.name}</span>
+                        <span style="color: #ffff66; font-size: 0.7rem;">${dateStr} ${timeStr}</span>
+                        <span style="color: #666; font-size: 0.7rem;">${route.points.length} points</span>
+                    </div>
+                    <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="deleteRoute(${index})">X</button>
+                `;
+                routeDiv.ondblclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        loadRoute(index);
+                    }
+                };
+                list.appendChild(routeDiv);
+            });
+        }
+
+        // Load saved route
+        function loadRoute(index) {
+            const routes = getSavedRoutes();
+            const route = routes[index];
+            if (route) {
+                // Set loaded route index
+                loadedRouteIndex = index;
+
+                // Clear current route state and odometry state
+                odometryOrigin = null;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+
+                // Load the route data into current state
+                routeOrigin = { ...route.origin };
+                routePoints = route.points.map(p => ({ ...p }));
+                routeLines = route.lines.map(l => ({
+                    start: { ...l.start },
+                    end: { ...l.end }
+                }));
+
+                // Update UI
+                document.getElementById('route-info').style.display = 'block';
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'block';
+                document.getElementById('loaded-route-name').textContent = route.name;
+
+                // Switch to route mode if not already
+                document.getElementById('mode-route').checked = true;
+                currentMode = 'route';
+
+                // Hide odometry info and show route info
+                document.getElementById('odometry-info').style.display = 'none';
+
+                // Show the loaded route info section
+                draw();
+            }
+        }
+
+        // Delete saved route
+        function deleteRoute(index) {
+            const routes = getSavedRoutes();
+            routes.splice(index, 1);
+            saveRoutesToStorage(routes);
+            updateSavedRoutesList();
+            draw();
+        }
+
+        // Delete all saved routes
+        document.getElementById('btn-delete-all-routes').addEventListener('click', () => {
+            localStorage.removeItem('rbrizz_saved_routes');
+            // Clear the list but keep the section visible
+            const list = document.getElementById('saved-routes-list');
+            list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+            draw();
+        });
+
+        // Unload route button handler
+        document.getElementById('btn-unload-route').addEventListener('click', () => {
+            unloadRoute();
+            draw();
+        });
+
+        function unloadRoute() {
+            loadedRouteIndex = null;
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+
+            document.getElementById('route-loaded-info').style.display = 'none';
+            document.getElementById('saved-routes-section').style.display = 'block';
+            updateSavedRoutesList();
+            draw();
+        }
+
+        // Make deleteRoute available globally
+        window.deleteRoute = deleteRoute;
+
+        // PWA Install prompt
+        let deferredPrompt;
+        const installBtn = document.getElementById('btn-install');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>
