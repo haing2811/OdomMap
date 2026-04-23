@@ -435,8 +435,12 @@
                     </div>
                 </div>
                 <div class="toggle-item" style="margin-top: 10px;">
-                    <input type="checkbox" id="show-triangle" checked>
+                    <input type="checkbox" id="show-triangle">
                     <label for="show-triangle">Show Right Triangle</label>
+                </div>
+                <div class="toggle-item" style="margin-top: 6px;">
+                    <input type="checkbox" id="show-grid">
+                    <label for="show-grid">Show Grid</label>
                 </div>
             </div>
 
@@ -499,6 +503,24 @@
                 <button class="btn" id="btn-unload-route" style="padding: 5px; font-size: 0.8rem; background: #4dd0e1; color: #000080; font-weight: bold;">
                     Unload Route
                 </button>
+            </div>
+
+            <div class="sidebar-section" id="edge-measure-section">
+                <h3>Edge Measure</h3>
+                <div class="edge-btn-group">
+                    <button class="edge-btn edge-btn-top" id="edge-btn-top">&#9650; Top</button>
+                    <button class="edge-btn" id="edge-btn-left">&#9664; Left</button>
+                    <button class="edge-btn" id="edge-btn-right">Right &#9654;</button>
+                    <button class="edge-btn edge-btn-bottom" id="edge-btn-bottom">&#9660; Bottom</button>
+                </div>
+                <button class="btn btn-secondary" id="btn-clear-edge-lines" style="margin-top:8px; padding:5px; font-size:0.8rem;">Clear Edge Lines</button>
+            </div>
+
+            <div class="sidebar-section" id="saved-lines-section">
+                <h3>Saved Lines</h3>
+                <button class="btn btn-primary" id="btn-save-lines" style="margin-bottom:6px; padding:6px; font-size:0.85rem;">&#128190; Save Current Lines</button>
+                <div id="saved-lines-list" style="max-height:160px; overflow-y:auto; margin-bottom:8px; border:1px solid #4dd0e1; border-radius:5px; padding:5px;"></div>
+                <button class="btn btn-danger" id="btn-delete-all-lines" style="padding:5px; font-size:0.8rem;">Delete All</button>
             </div>
 
             <div class="sidebar-section" id="measurements">
@@ -582,6 +604,9 @@
         // Canvas scale
         let scale = 1;
         let canvasWidth, canvasHeight;
+        let edgeMeasureMode = null; // 'top' | 'bottom' | 'left' | 'right' | null
+        let edgeLines = []; // {edge, px, py, distMM}
+        let showGrid = false;
 
         // State
         let startPoint = null;
@@ -594,7 +619,7 @@
 
         // Display toggles
         let currentMode = 'normal'; // 'normal', 'odometry', 'route'
-        let showTriangle = true;
+        let showTriangle = false;
         const showDistance = true;
         const showAngle = true;
         const showLegs = true;
@@ -677,14 +702,19 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
+            // Clamp position inside canvas
+            const margin = 30;
+            const tx = Math.max(margin, Math.min(canvasWidth - margin, start.x));
+            const ty = Math.max(margin, Math.min(canvasHeight - margin, start.y + 25));
+
             // White outline
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 3;
-            ctx.strokeText(text, start.x, start.y + 25);
+            ctx.strokeText(text, tx, ty);
 
             // Red fill
             ctx.fillStyle = '#ff0000';
-            ctx.fillText(text, start.x, start.y + 25);
+            ctx.fillText(text, tx, ty);
         }
 
         // Draw line with white outline for visibility
@@ -803,8 +833,8 @@
                 ctx.globalAlpha = 1;
             }
 
-            // Draw grid only in odometry mode
-            if (currentMode === 'odometry') {
+            // Draw grid in odometry mode or when showGrid is enabled
+            if (currentMode === 'odometry' || showGrid) {
                 ctx.strokeStyle = COLORS.grid;
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = gridOpacity;
@@ -1043,6 +1073,52 @@
 
                 // Draw start point
                 drawPoint(startPoint, COLORS.startPoint, 7, 5);
+            }
+
+            // Draw saved edge lines
+            edgeLines.forEach(el => {
+                let x1, y1, x2, y2;
+                if (el.edge === 'top')    { x1 = el.px; y1 = 0;            x2 = el.px; y2 = el.py; }
+                if (el.edge === 'bottom') { x1 = el.px; y1 = canvasHeight; x2 = el.px; y2 = el.py; }
+                if (el.edge === 'left')   { x1 = 0;     y1 = el.py;        x2 = el.px; y2 = el.py; }
+                if (el.edge === 'right')  { x1 = canvasWidth; y1 = el.py;  x2 = el.px; y2 = el.py; }
+                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                // Tick marks at edge
+                const tickLen = 8;
+                if (el.edge === 'top' || el.edge === 'bottom') {
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                } else {
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                }
+                // Label inside canvas
+                let lx, ly;
+                if (el.edge === 'top')    { lx = el.px + 22; ly = Math.max(el.py / 2, 14); }
+                if (el.edge === 'bottom') { lx = el.px + 22; ly = Math.min((canvasHeight + el.py) / 2, canvasHeight - 14); }
+                if (el.edge === 'left')   { lx = Math.max(el.px / 2, 30); ly = el.py - 14; }
+                if (el.edge === 'right')  { lx = Math.min((canvasWidth + el.px) / 2, canvasWidth - 30); ly = el.py - 14; }
+                drawTextWithOutline(Math.round(el.distMM) + 'mm', lx, ly, 13, '#00ccff');
+            });
+
+            // Draw edge measure preview
+            if (edgeMeasureMode && isMouseOver) {
+                let x1, y1, x2, y2, distMM;
+                if (edgeMeasureMode === 'top')    { x1 = mousePos.x; y1 = 0;            x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(mousePos.y); }
+                if (edgeMeasureMode === 'bottom') { x1 = mousePos.x; y1 = canvasHeight; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasHeight - mousePos.y); }
+                if (edgeMeasureMode === 'left')   { x1 = 0;     y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(mousePos.x); }
+                if (edgeMeasureMode === 'right')  { x1 = canvasWidth; y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasWidth - mousePos.x); }
+                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                const tickLen = 8;
+                if (edgeMeasureMode === 'top' || edgeMeasureMode === 'bottom') {
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                } else {
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                }
+                let lx, ly;
+                if (edgeMeasureMode === 'top')    { lx = mousePos.x + 22; ly = Math.max(mousePos.y / 2, 14); }
+                if (edgeMeasureMode === 'bottom') { lx = mousePos.x + 22; ly = Math.min((canvasHeight + mousePos.y) / 2, canvasHeight - 14); }
+                if (edgeMeasureMode === 'left')   { lx = Math.max(mousePos.x / 2, 30); ly = mousePos.y - 14; }
+                if (edgeMeasureMode === 'right')  { lx = Math.min((canvasWidth + mousePos.x) / 2, canvasWidth - 30); ly = mousePos.y - 14; }
+                drawTextWithOutline(Math.round(distMM) + 'mm', lx, ly, 13, '#00ccff');
             }
 
             // Draw robot cursor
@@ -1316,6 +1392,7 @@
             const category = document.getElementById('category-select').value;
             loadFieldImage(getFieldImageUrl(year, category));
             updateSavedRoutesList();
+            updateSavedLinesList();
         });
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -1354,6 +1431,18 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            // Edge measure mode click
+            if (edgeMeasureMode) {
+                let distMM;
+                if (edgeMeasureMode === 'top')    distMM = toMM(y);
+                if (edgeMeasureMode === 'bottom') distMM = toMM(canvasHeight - y);
+                if (edgeMeasureMode === 'left')   distMM = toMM(x);
+                if (edgeMeasureMode === 'right')  distMM = toMM(canvasWidth - x);
+                edgeLines.push({ edge: edgeMeasureMode, px: x, py: y, distMM });
+                draw();
+                return;
+            }
 
             // If odometry mode is on and origin not set, set the origin
             if (currentMode === 'odometry' && !odometryOrigin) {
@@ -1459,6 +1548,13 @@
 
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
+            // Deselect edge measure mode on right click
+            if (edgeMeasureMode) {
+                document.getElementById(`edge-btn-${edgeMeasureMode}`).classList.remove('active');
+                edgeMeasureMode = null;
+                draw();
+                return;
+            }
             startPoint = null;
             endPoint = null;
             if (currentMode === 'route') {
@@ -1502,8 +1598,32 @@
             draw();
         });
 
+        // Edge measure button handlers
+        ['top', 'bottom', 'left', 'right'].forEach(edge => {
+            document.getElementById(`edge-btn-${edge}`).addEventListener('click', () => {
+                if (edgeMeasureMode === edge) {
+                    edgeMeasureMode = null;
+                    document.getElementById(`edge-btn-${edge}`).classList.remove('active');
+                } else {
+                    if (edgeMeasureMode) document.getElementById(`edge-btn-${edgeMeasureMode}`).classList.remove('active');
+                    edgeMeasureMode = edge;
+                    document.getElementById(`edge-btn-${edge}`).classList.add('active');
+                    // Deselect active line drawing
+                    startPoint = null;
+                    endPoint = null;
+                }
+                draw();
+            });
+        });
+
+        document.getElementById('btn-clear-edge-lines').addEventListener('click', () => {
+            edgeLines = [];
+            draw();
+        });
+
         document.getElementById('btn-clear-all').addEventListener('click', () => {
             lines = [];
+            edgeLines = [];
             startPoint = null;
             endPoint = null;
             // In odometry mode, clear points and lines but keep origin
@@ -1597,6 +1717,94 @@
         document.getElementById('show-triangle').addEventListener('change', (e) => {
             showTriangle = e.target.checked;
             draw();
+        });
+
+        document.getElementById('show-grid').addEventListener('change', (e) => {
+            showGrid = e.target.checked;
+            draw();
+        });
+
+        // ---- Saved Lines ----
+        function getSavedLinesSets() {
+            return JSON.parse(localStorage.getItem('odommap_saved_lines')) || [];
+        }
+        function saveLinesSetsToStorage(sets) {
+            localStorage.setItem('odommap_saved_lines', JSON.stringify(sets));
+        }
+
+        function updateSavedLinesList() {
+            const list = document.getElementById('saved-lines-list');
+            const sets = getSavedLinesSets();
+            list.innerHTML = '';
+            if (sets.length === 0) {
+                list.innerHTML = '<div style="color:#666;text-align:center;padding:12px;font-size:0.8rem;">No saved lines</div>';
+                return;
+            }
+            sets.forEach((set, idx) => {
+                const realIdx = sets.length - 1 - idx;
+                const set_ = sets[realIdx];
+                const div = document.createElement('div');
+                div.style.cssText = 'padding:6px 8px;background:#0d1b2a;margin-bottom:4px;border-radius:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;';
+                div.innerHTML = `
+                    <div style="display:flex;flex-direction:column;">
+                        <span style="color:#4dd0e1;font-weight:bold;font-size:0.85rem;">${set_.name}</span>
+                        <span style="color:#666;font-size:0.7rem;">${set_.lines.length} lines, ${set_.edgeLines.length} edge lines</span>
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                        <button class="btn" style="padding:2px 7px;font-size:0.75rem;background:#4dd0e1;color:#000080;" onclick="loadLinesSet(${realIdx})">Load</button>
+                        <button class="btn btn-danger" style="padding:2px 7px;font-size:0.75rem;" onclick="deleteLinesSet(${realIdx})">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('btn-save-lines').addEventListener('click', () => {
+            if (lines.length === 0 && edgeLines.length === 0) return;
+            const now = new Date();
+            const name = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            // Store lines in mm (scale-independent)
+            const sets = getSavedLinesSets();
+            sets.push({
+                name,
+                timestamp: now.toISOString(),
+                lines: lines.map(l => ({
+                    start: { xMM: toMM(l.start.x), yMM: toMM(l.start.y) },
+                    end:   { xMM: toMM(l.end.x),   yMM: toMM(l.end.y)   }
+                })),
+                edgeLines: edgeLines.map(el => ({ ...el, pxMM: toMM(el.px), pyMM: toMM(el.py) }))
+            });
+            saveLinesSetsToStorage(sets);
+            updateSavedLinesList();
+        });
+
+        window.loadLinesSet = function(idx) {
+            const sets = getSavedLinesSets();
+            const set = sets[idx];
+            if (!set) return;
+            lines = set.lines.map(l => ({
+                start: { x: toCanvas(l.start.xMM), y: toCanvas(l.start.yMM) },
+                end:   { x: toCanvas(l.end.xMM),   y: toCanvas(l.end.yMM)   }
+            }));
+            edgeLines = set.edgeLines.map(el => ({
+                edge: el.edge,
+                px: toCanvas(el.pxMM),
+                py: toCanvas(el.pyMM),
+                distMM: el.distMM
+            }));
+            draw();
+        };
+
+        window.deleteLinesSet = function(idx) {
+            const sets = getSavedLinesSets();
+            sets.splice(idx, 1);
+            saveLinesSetsToStorage(sets);
+            updateSavedLinesList();
+        };
+
+        document.getElementById('btn-delete-all-lines').addEventListener('click', () => {
+            localStorage.removeItem('odommap_saved_lines');
+            updateSavedLinesList();
         });
 
         document.getElementById('grid-opacity-slider').addEventListener('input', (e) => {
@@ -1773,7 +1981,11 @@
             const section = document.getElementById('saved-routes-section');
             const routes = getSavedRoutes();
 
-            // Always show the section in route mode
+            // Only show section in route mode
+            if (currentMode !== 'route') {
+                section.style.display = 'none';
+                return;
+            }
             section.style.display = 'block';
 
             list.innerHTML = '';
