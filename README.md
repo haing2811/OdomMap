@@ -2,7 +2,6 @@
 
 <div align="center">
 
-
 **A visual field distance calculator and odometry assistant built for WRO.**  
 Measure paths, calculate wheel rotations, and plan robot movement — all on an interactive field map.
 
@@ -17,6 +16,7 @@ OdomMap is a browser-based tool that overlays competition field images and lets 
 - 📏 Click to draw measurement lines across the field
 - 🔄 Instantly calculate wheel rotations and degrees for any path
 - 🧭 Use Odometry Mode to track X/Y position relative to an origin point
+- 🛣️ Use Route Mode to plan and save full competition paths
 - 📐 Visualize right-triangle breakdowns of diagonal paths
 - 🗓️ Switch between competition years (2023–2026) and categories
 
@@ -64,7 +64,21 @@ OdomMap/
 
 ## 🎮 How to Use
 
-### 📏 Distance Measurement
+### 📏 Normal Mode — Line Distance & Measurement
+
+The default mode for measuring distances and analyzing paths on the field.
+
+**Features at a glance:**
+
+| Feature | Description |
+|---|---|
+| 📏 Line Distance | Click two points to measure the straight-line distance between them in mm |
+| 📐 Angle of Change | See the angle between consecutive lines to plan turns and heading changes |
+| 📍 Measurement from Edge | Measure distance relative to the nearest field edge for precise positioning |
+| 🔲 Show Grid | Toggle a grid overlay on the field for visual reference and alignment |
+| 📐 Right Triangle View | Break down any diagonal line into its horizontal (X) and vertical (Y) components visually |
+
+**How to draw lines:**
 
 | Step | Action |
 |---|---|
@@ -80,6 +94,8 @@ OdomMap/
 |---|---|
 | 📏 Distance | Straight-line distance in mm |
 | 📐 Angle | Absolute angle from horizontal (°) |
+| 🔄 Angle of Change | Turn angle between the previous and current line segment (°) |
+| 📍 Distance from Edge | Distance to the nearest field boundary (mm) |
 | 🔄 Wheel Rotations | Full rotations needed for your wheel diameter |
 | 🔵 Wheel Degrees | Motor degrees needed |
 | ↔️ Horizontal | X-axis component (mm) |
@@ -101,8 +117,10 @@ Odometry Mode helps you plan and visualize robot position relative to a **custom
 ### How to activate:
 
 1. Check ✅ **Odometry Mode** in the sidebar
-2. **Click** on the field to set your **origin (0, 0)**
+2. **Click** on the field to place your **origin (0, 0)** — this is where your robot starts
 3. Use **Add Point** or **Add Line** to mark robot positions and paths
+
+> 🟡 The origin acts as your robot's (0, 0) coordinate. All X/Y positions are measured relative to it.
 
 ### Odometry Sidebar shows:
 
@@ -111,6 +129,30 @@ Odometry Mode helps you plan and visualize robot position relative to a **custom
 | X | Horizontal distance from origin (mm) |
 | Y | Vertical distance from origin (mm, upward positive) |
 | Angle | Direction from origin (°) |
+
+---
+
+## 🛣️ Route Mode
+
+Route Mode lets you plan, save, and replay your robot's full competition path on the field map.
+
+### How to activate:
+
+1. Select **Route Mode** from the mode selector
+2. **Click** on the field to add sequential waypoints along your planned route
+3. Use **Save Route** to store your path for future reference
+4. Load a saved route to overlay it on the field during practice or competition review
+
+### Route Mode features:
+
+| Feature | Description |
+|---|---|
+| 📍 Waypoints | Click to place ordered stops along the robot's planned path |
+| 💾 Save Route | Export and store your drawn route to reload later |
+| 📂 Load Route | Reload a previously saved route and display it on the field |
+| 🔁 Replay Path | Visualize the full route sequence on the field map |
+
+> 🏁 Useful for competition day — plan your route during practice and load it up before your run.
 
 ---
 
@@ -136,7 +178,7 @@ Use the dropdowns in the **header** to choose:
 |---|---|
 | 🆕 New Line | Resets the current line drawing |
 | 🗑️ Delete Last | Removes the most recently drawn line |
-| 🧹 Clear All | Clears all lines (and odometry data in Odometry Mode) |
+| 🧹 Clear All | Clears all lines (and odometry/route data in their respective modes) |
 
 ---
 
@@ -144,8 +186,10 @@ Use the dropdowns in the **header** to choose:
 
 | Toggle | Effect |
 |---|---|
+| 🔲 Show Grid | Toggles the grid overlay on the field canvas |
 | 🔵 Show Right Triangle | Displays horizontal/vertical leg breakdown of each line |
 | 📡 Odometry Mode | Enables origin-relative X/Y coordinate tracking |
+| 🛣️ Route Mode | Enables waypoint-based route planning and saving |
 | 🔆 Grid Opacity Slider | Adjusts the grid overlay brightness (Odometry Mode only) |
 
 ---
