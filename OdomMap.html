@@ -393,6 +393,256 @@
 
         .edge-btn-top { grid-column: 1 / 3; }
         .edge-btn-bottom { grid-column: 1 / 3; }
+
+        #robot-size-customizer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1b263b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4dd0e1;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-family: 'Orbitron', sans-serif;
+            width: 250px;
+        }
+        #robot-size-customizer h3 {
+            color: #4dd0e1;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .size-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .size-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .size-input-row input[type="number"] {
+            width: 70px;
+        }
+        .size-input-row input[type="range"] {
+            flex: 1;
+        }
+        #btn-close-customizer {
+            cursor: pointer;
+            background: #ff4444;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+        }
+        #btn-toggle-robot-size {
+            padding: 6px 12px;
+            background: #1a1a2e;
+            color: #4dd0e1;
+            border: 1px solid #4dd0e1;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s;
+        }
+        #btn-toggle-robot-size:hover {
+            background: #4dd0e1;
+            color: #000080;
+        }
+
+        /* Robot Customization Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .robot-modal {
+            background: #1b263b;
+            border: 2px solid #4dd0e1;
+            border-radius: 12px;
+            padding: 15px;
+            width: 550px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(77, 208, 225, 0.3);
+        }
+        .robot-modal h2 {
+            color: #4dd0e1;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .robot-modal-close {
+            cursor: pointer;
+            background: #ff4444;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        .robot-editor-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .robot-canvas-wrapper {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            background: #0d1b2a;
+            border: 2px solid #4dd0e1;
+            border-radius: 8px;
+        }
+        #robot-editor-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .robot-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 180px;
+            flex: 1;
+        }
+        .robot-modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .robot-modal-buttons .btn-save,
+        .robot-modal-buttons .btn-reset {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        .dimension-group {
+            background: #0d1b2a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .dimension-group h4 {
+            color: #4dd0e1;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        .dimension-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .dimension-row label {
+            min-width: 50px;
+            font-size: 0.75rem;
+        }
+        .dimension-row input[type="number"] {
+            width: 70px;
+            padding: 5px 6px;
+            font-size: 0.75rem;
+        }
+        .dimension-row span {
+            color: #4dd0e1;
+            font-size: 0.7rem;
+        }
+        .symmetry-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .symmetry-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #4dd0e1;
+        }
+        .symmetry-toggle label {
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-reset {
+            background: #ffff99;
+            color: #000080;
+            font-weight: bold;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .btn-reset:hover {
+            background: #ffeb3b;
+        }
+        .btn-save {
+            background: #4dd0e1;
+            color: #000080;
+            font-weight: bold;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .btn-save:hover {
+            background: #00bcd4;
+        }
+        .robot-dimensions-display {
+            margin-top: 8px;
+            padding: 8px;
+            background: #0d1b2a;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .robot-dimensions-display h4 {
+            color: #4dd0e1;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+        .dim-display-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+        .dim-display-row span:first-child {
+            color: #ffffff;
+        }
+        .dim-display-row span:last-child {
+            color: #ffff99;
+        }
+
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -430,10 +680,97 @@
                 <label for="wheel-diameter">Wheel (mm):</label>
                 <input type="number" id="wheel-diameter" value="62.4" step="0.1">
             </div>
+            <button id="btn-toggle-robot-size">Customize Robot</button>
         </div>
     </header>
 
     <div id="main-container">
+        <div id="robot-size-customizer">
+            <h3>Robot Size <button id="btn-close-customizer">X</button></h3>
+            <div class="size-control-group">
+                <label>Width (mm):</label>
+                <div class="size-input-row">
+                    <input type="number" id="robot-width-input" value="250" step="1">
+                    <input type="range" id="robot-width-slider" min="10" max="1000" value="250">
+                </div>
+            </div>
+            <div class="size-control-group">
+                <label>Height (mm):</label>
+                <div class="size-input-row">
+                    <input type="number" id="robot-height-input" value="250" step="1">
+                    <input type="range" id="robot-height-slider" min="10" max="1000" value="250">
+                </div>
+            </div>
+        </div>
+
+        <!-- Robot Customization Modal -->
+        <div class="modal-overlay" id="robot-modal">
+            <div class="robot-modal">
+                <h2>Robot Customization <button class="robot-modal-close" id="robot-modal-close">X</button></h2>
+                <div class="robot-editor-container">
+                    <div class="robot-canvas-wrapper">
+                        <canvas id="robot-editor-canvas"></canvas>
+                    </div>
+                    <div class="robot-controls">
+                        <div class="robot-modal-buttons">
+                            <button class="btn-save" id="btn-save-robot">Save & Close</button>
+                            <button class="btn-reset" id="btn-reset-robot">Reset</button>
+                        </div>
+                        <div class="dimension-group">
+                            <h4>Dimensions (from center)</h4>
+                            <div class="dimension-row">
+                                <label>Front:</label>
+                                <input type="number" id="robot-front" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Rear:</label>
+                                <input type="number" id="robot-rear" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Left:</label>
+                                <input type="number" id="robot-left" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Right:</label>
+                                <input type="number" id="robot-right" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="symmetry-toggle">
+                                <input type="checkbox" id="symmetry-mode" checked>
+                                <label for="symmetry-mode">Symmetry Mode</label>
+                            </div>
+                        </div>
+                        <div class="dimension-group">
+                            <h4>Overall Dimensions</h4>
+                            <div class="dimension-row">
+                                <label>Width:</label>
+                                <input type="number" id="robot-total-width" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Length:</label>
+                                <input type="number" id="robot-total-length" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <span>mm</span>
+                            </div>
+                        </div>
+                        <div class="robot-dimensions-display">
+                            <h4>Current Robot Size</h4>
+                            <div class="dim-display-row">
+                                <span>Total Width:</span>
+                                <span id="display-width">250 mm</span>
+                            </div>
+                            <div class="dim-display-row">
+                                <span>Total Length:</span>
+                                <span id="display-length">250 mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
         </div>
@@ -627,7 +964,8 @@
         // Field dimensions in mm
         const FIELD_WIDTH_MM = 2362;
         const FIELD_HEIGHT_MM = 1143;
-        const ROBOT_SIZE_MM = 250;
+        let ROBOT_SIZE = { width: 250, height: 250 };
+
 
         // Canvas scale
         let scale = 1;
@@ -669,6 +1007,13 @@
         let routeIsPlanning = false;
         let routePendingLine = null;
         let savedRoutes = [];
+        let hoveredNodeIndex = null;
+        let draggedNodeIndex = null;
+
+        // Get actual last node index - ALWAYS returns the true last point
+        function getLastNodeIndex() {
+            return routePoints.length - 1;
+        }
 
         // Recording state
         let isRecording = false;
@@ -1570,7 +1915,7 @@
             }
 
             // Draw current route being planned
-            if (currentMode === 'route' && routeOrigin) {
+            if (routeOrigin) {
                 // Draw origin point - white outer, black inner
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
@@ -1625,6 +1970,15 @@
                     ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // Hover highlight
+                    if (hoveredNodeIndex === idx) {
+                        ctx.strokeStyle = '#4dd0e1';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 12, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
                     // Label coordinate above (white outline, black text)
                     const odoX = toMM(point.x - routeOrigin.x);
                     const odoY = toMM(routeOrigin.y - point.y);
@@ -1668,16 +2022,46 @@
         }
 
         function drawRobotCursor(x, y) {
-            const halfSize = toCanvas(ROBOT_SIZE_MM) / 2;
+            const halfW = toCanvas(ROBOT_SIZE.width) / 2;
+            const halfH = toCanvas(ROBOT_SIZE.height) / 2;
+
+            // Reverse both X and Y to match customization panel
+            // In customization: front is up (negative Y in canvas)
+            const offsetX = toCanvas(-ROBOT_CENTER_OFFSET.x);
+            const offsetY = toCanvas(-ROBOT_CENTER_OFFSET.y);
+
+            // Draw robot centered around user-defined center
+            const robotLeft = x - halfW + offsetX;
+            const robotTop = y - halfH + offsetY;
 
             // Draw see-through box with white outline
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
-            ctx.strokeRect(x - halfSize, y - halfSize, halfSize * 2, halfSize * 2);
+            ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
 
             ctx.strokeStyle = COLORS.robot;
             ctx.lineWidth = 2;
-            ctx.strokeRect(x - halfSize, y - halfSize, halfSize * 2, halfSize * 2);
+            ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
+
+            // Draw directional indicator (front arrow) - pointing up (negative Y)
+            ctx.fillStyle = '#ffff99';
+            ctx.beginPath();
+            const arrowSize = 10;
+            ctx.moveTo(x, robotTop - arrowSize);
+            ctx.lineTo(x - arrowSize/2, robotTop);
+            ctx.lineTo(x + arrowSize/2, robotTop);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw center point at mouse position
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
 
             ctx.strokeStyle = COLORS.crosshair;
             ctx.lineWidth = 1;
@@ -1692,6 +2076,7 @@
             ctx.lineTo(x, canvasHeight);
             ctx.stroke();
         }
+
 
         function calculateDistance(p1, p2) {
             const dx = toMM(p2.x - p1.x);
@@ -1792,6 +2177,32 @@
                 updateMeasurements(startPoint, mousePos);
             }
 
+            // Node Interaction logic (Route Mode)
+            if (currentMode === 'route' && routePoints.length > 0) {
+                // Check for hover
+                hoveredNodeIndex = null;
+                routePoints.forEach((point, idx) => {
+                    const dist = Math.sqrt(Math.pow(mousePos.x - point.x, 2) + Math.pow(mousePos.y - point.y, 2));
+                    if (dist < 10) {
+                        hoveredNodeIndex = idx;
+                    }
+                });
+
+                // Handle dragging - ONLY update point position, NO lines, NO connections
+                if (draggedNodeIndex !== null) {
+                    // Just move the point - nothing else changes
+                    routePoints[draggedNodeIndex].x = mousePos.x;
+                    routePoints[draggedNodeIndex].y = mousePos.y;
+
+                    // If dragging the origin (index 0), also update routeOrigin
+                    if (draggedNodeIndex === 0 && routeOrigin) {
+                        routeOrigin.x = mousePos.x;
+                        routeOrigin.y = mousePos.y;
+                    }
+                    // NO line changes, NO connection changes
+                }
+            }
+
             // Update odometry display in sidebar
             if (currentMode === 'odometry' && odometryOrigin) {
                 if (isAngleIndicatorActive) {
@@ -1824,7 +2235,19 @@
                 routePendingLine = null;
                 document.getElementById('route-buttons').style.display = 'flex';
             }
+            draggedNodeIndex = null;
             draw();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            draggedNodeIndex = null;
+            draw();
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentMode === 'route' && hoveredNodeIndex !== null) {
+                draggedNodeIndex = hoveredNodeIndex;
+            }
         });
 
         canvas.addEventListener('click', (e) => {
@@ -1930,11 +2353,17 @@
 
             // Route mode handling
             if (currentMode === 'route') {
+                // If clicking on existing node - don't add new point, just return
+                if (hoveredNodeIndex !== null) {
+                    return;
+                }
+
                 // If route origin not set, set it
                 if (!routeOrigin) {
                     routeOrigin = { x, y };
                     routeIsPlanning = true;
                     routePoints.push({ x, y });
+                    // lastNodeIndex handled by getLastNodeIndex()
                     document.getElementById('route-info').style.display = 'block';
                     document.getElementById('route-point-count').textContent = routePoints.length;
                     document.getElementById('route-buttons').style.display = 'none';
@@ -1948,13 +2377,17 @@
                     routeLines.push(routePendingLine);
                 }
 
-                // Start a new line from last point to current click
-                const lastPoint = routePoints[routePoints.length - 1];
-                routePendingLine = {
-                    start: { ...lastPoint },
-                    end: { x, y }
-                };
+                // Start a new line from actual last node (not recently dragged node)
+                const lastPoint = routePoints[getLastNodeIndex()];
+                // Add new point to routePoints first
                 routePoints.push({ x, y });
+                const newPoint = routePoints[routePoints.length - 1];
+                // Create line with references
+                routePendingLine = {
+                    start: lastPoint,    // Reference
+                    end: newPoint        // Reference
+                };
+                // lastNodeIndex handled by getLastNodeIndex()
                 document.getElementById('route-point-count').textContent = routePoints.length;
                 document.getElementById('route-buttons').style.display = 'flex';
                 draw();
@@ -2007,6 +2440,7 @@
                 routePoints = [];
                 routeLines = [];
                 routePendingLine = null;
+                savedLastNodeIndex = null;
                 document.getElementById('route-buttons').style.display = 'none';
                 document.getElementById('route-point-count').textContent = '0';
             }
@@ -2087,6 +2521,7 @@
                 routePoints = [];
                 routeLines = [];
                 routePendingLine = null;
+                savedLastNodeIndex = null;
                 document.getElementById('route-buttons').style.display = 'none';
                 document.getElementById('route-point-count').textContent = '0';
             }
@@ -2103,12 +2538,6 @@
                 odometryPoints = [];
                 odometryLines = [];
                 odometryAddMode = null;
-                routeOrigin = null;
-                routePoints = [];
-                routeLines = [];
-                routeIsPlanning = false;
-                routePendingLine = null;
-                unloadRoute();
                 recordedPoints = [];
                 document.getElementById('odometry-info').style.display = 'none';
                 document.getElementById('route-info').style.display = 'none';
@@ -2127,11 +2556,6 @@
         document.getElementById('mode-odometry').addEventListener('change', (e) => {
             if (e.target.checked) {
                 currentMode = 'odometry';
-                routeOrigin = null;
-                routePoints = [];
-                routeLines = [];
-                routeIsPlanning = false;
-                routePendingLine = null;
                 odometryOrigin = null;
                 odometryOriginAngle = 0;
                 odometryPoints = [];
@@ -2303,7 +2727,539 @@
             }
         });
 
+        // Robot size customizer handlers (old panel - hidden, used for compatibility)
+        const customizer = document.getElementById('robot-size-customizer');
+        const toggleBtn = document.getElementById('btn-toggle-robot-size');
+        const closeBtn = document.getElementById('btn-close-customizer');
+        const widthInput = document.getElementById('robot-width-input');
+        const widthSlider = document.getElementById('robot-width-slider');
+        const heightInput = document.getElementById('robot-height-input');
+        const heightSlider = document.getElementById('robot-height-slider');
+
+        // Button now opens the modal instead of the old panel
+        toggleBtn.addEventListener('click', () => {
+            openRobotModal();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            customizer.style.display = 'none';
+        });
+
+        function updateRobotSize(type, val) {
+            const value = parseInt(val);
+            if (type === 'width') {
+                ROBOT_SIZE.width = value;
+                widthInput.value = value;
+                widthSlider.value = value;
+            } else {
+                ROBOT_SIZE.height = value;
+                heightInput.value = value;
+                heightSlider.value = value;
+            }
+            document.querySelector('#robot-info div').textContent = `Size: ${ROBOT_SIZE.width} x ${ROBOT_SIZE.height} mm`;
+            draw();
+        }
+
+        widthInput.addEventListener('input', (e) => updateRobotSize('width', e.target.value));
+        widthSlider.addEventListener('input', (e) => updateRobotSize('width', e.target.value));
+        heightInput.addEventListener('input', (e) => updateRobotSize('height', e.target.value));
+        heightSlider.addEventListener('input', (e) => updateRobotSize('height', e.target.value));
+
+        // ================================================
+        // ROBOT CUSTOMIZATION MODAL
+        // ================================================
+
+        // Robot dimensions state (from center to each side)
+        const ROBOT_DIMENSIONS = {
+            front: 125,  // mm from center to front
+            rear: 125,   // mm from center to rear
+            left: 125,   // mm from center to left
+            right: 125   // mm from center to right
+        };
+        const MAX_DIMENSION = 250;
+
+        // Robot center offset from geometric center (in mm)
+        // x: positive = center shifted right (more space on left)
+        // y: positive = center shifted down (more space on top/front)
+        let ROBOT_CENTER_OFFSET = { x: 0, y: 0 };
+
+        // Robot editor canvas
+        const robotEditorCanvas = document.getElementById('robot-editor-canvas');
+        const robotEditorCtx = robotEditorCanvas.getContext('2d');
+        const EDITOR_SIZE = 280;
+        const EDITOR_CENTER = EDITOR_SIZE / 2;
+        const PIXELS_PER_MM = (EDITOR_SIZE - 30) / (MAX_DIMENSION * 2);
+
+        let robotEditorDragging = null; // 'front', 'rear', 'left', 'right' or null
+        let isSymmetryMode = true;
+
+        // Initialize robot editor canvas size
+        robotEditorCanvas.width = EDITOR_SIZE;
+        robotEditorCanvas.height = EDITOR_SIZE;
+
+        // Load saved robot dimensions from localStorage
+        function loadRobotDimensions() {
+            const saved = localStorage.getItem('robot_dimensions');
+            if (saved) {
+                const dims = JSON.parse(saved);
+                ROBOT_DIMENSIONS.front = dims.front || 125;
+                ROBOT_DIMENSIONS.rear = dims.rear || 125;
+                ROBOT_DIMENSIONS.left = dims.left || 125;
+                ROBOT_DIMENSIONS.right = dims.right || 125;
+            }
+            // Also update the main ROBOT_SIZE
+            ROBOT_SIZE.width = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            ROBOT_SIZE.height = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+            // Calculate center offset from geometric center
+            calculateCenterOffset();
+        }
+
+        // Calculate center offset based on current dimensions
+        function calculateCenterOffset() {
+            // In customization panel: front is UP, left is LEFT
+            // Reverse both to match
+            ROBOT_CENTER_OFFSET.x = (ROBOT_DIMENSIONS.left - ROBOT_DIMENSIONS.right) / 2;
+            ROBOT_CENTER_OFFSET.y = (ROBOT_DIMENSIONS.rear - ROBOT_DIMENSIONS.front) / 2;
+        }
+
+        // Save robot dimensions to localStorage
+        function saveRobotDimensions() {
+            localStorage.setItem('robot_dimensions', JSON.stringify(ROBOT_DIMENSIONS));
+            // Also update the main ROBOT_SIZE
+            ROBOT_SIZE.width = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            ROBOT_SIZE.height = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+            // Calculate center offset from geometric center
+            calculateCenterOffset();
+        }
+
+        // Draw the robot in the editor
+        function drawRobotEditor() {
+            const ctx = robotEditorCtx;
+
+            // Clear canvas
+            ctx.fillStyle = '#0d1b2a';
+            ctx.fillRect(0, 0, EDITOR_SIZE, EDITOR_SIZE);
+
+            // Draw grid
+            ctx.strokeStyle = '#1b263b';
+            ctx.lineWidth = 1;
+            const gridStep = 25 * PIXELS_PER_MM;
+            for (let i = 0; i <= EDITOR_SIZE; i += gridStep) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, EDITOR_SIZE);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(EDITOR_SIZE, i);
+                ctx.stroke();
+            }
+
+            // Calculate pixel distances from center
+            const frontPx = ROBOT_DIMENSIONS.front * PIXELS_PER_MM;
+            const rearPx = ROBOT_DIMENSIONS.rear * PIXELS_PER_MM;
+            const leftPx = ROBOT_DIMENSIONS.left * PIXELS_PER_MM;
+            const rightPx = ROBOT_DIMENSIONS.right * PIXELS_PER_MM;
+
+            // Draw center point (origin)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw guide lines from center to each side
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+
+            // Front guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER, EDITOR_CENTER - frontPx);
+            ctx.stroke();
+
+            // Rear guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER, EDITOR_CENTER + rearPx);
+            ctx.stroke();
+
+            // Left guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER - leftPx, EDITOR_CENTER);
+            ctx.stroke();
+
+            // Right guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            // Draw robot outline
+            ctx.fillStyle = 'rgba(0, 0, 128, 0.3)';
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER - leftPx, EDITOR_CENTER - frontPx); // top-left
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER - frontPx);  // top-right
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER + rearPx);   // bottom-right
+            ctx.lineTo(EDITOR_CENTER - leftPx, EDITOR_CENTER + rearPx);   // bottom-left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw directional indicator (front arrow)
+            ctx.fillStyle = '#ffff99';
+            ctx.beginPath();
+            const arrowSize = 10;
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER - frontPx - arrowSize);
+            ctx.lineTo(EDITOR_CENTER - arrowSize/2, EDITOR_CENTER - frontPx);
+            ctx.lineTo(EDITOR_CENTER + arrowSize/2, EDITOR_CENTER - frontPx);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw labels
+            ctx.font = 'bold 10px Orbitron, monospace';
+            ctx.fillStyle = '#4dd0e1';
+            ctx.textAlign = 'center';
+            ctx.fillText('FRONT', EDITOR_CENTER, EDITOR_CENTER - frontPx - 18);
+            ctx.fillText('REAR', EDITOR_CENTER, EDITOR_CENTER + rearPx + 20);
+            ctx.fillText('LEFT', EDITOR_CENTER - leftPx - 25, EDITOR_CENTER + 4);
+            ctx.fillText('RIGHT', EDITOR_CENTER + rightPx + 25, EDITOR_CENTER + 4);
+
+            // Draw drag handles (circles at each edge)
+            const handleRadius = 8;
+
+            // Front handle
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER - frontPx, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Rear handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER + rearPx, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Left handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER - leftPx, EDITOR_CENTER, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Right handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER + rightPx, EDITOR_CENTER, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw dimension values on the lines
+            ctx.font = 'bold 9px Orbitron, monospace';
+            ctx.fillStyle = '#ffff99';
+            ctx.fillText(ROBOT_DIMENSIONS.front + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER - frontPx/2);
+            ctx.fillText(ROBOT_DIMENSIONS.rear + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER + rearPx/2);
+            ctx.fillText(ROBOT_DIMENSIONS.left + 'mm', EDITOR_CENTER - leftPx/2, EDITOR_CENTER - 12);
+            ctx.fillText(ROBOT_DIMENSIONS.right + 'mm', EDITOR_CENTER + rightPx/2, EDITOR_CENTER - 12);
+        }
+
+        // Update inputs to match current dimensions
+        function updateDimensionInputs() {
+            document.getElementById('robot-front').value = ROBOT_DIMENSIONS.front;
+            document.getElementById('robot-rear').value = ROBOT_DIMENSIONS.rear;
+            document.getElementById('robot-left').value = ROBOT_DIMENSIONS.left;
+            document.getElementById('robot-right').value = ROBOT_DIMENSIONS.right;
+
+            const totalWidth = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            const totalLength = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+
+            document.getElementById('robot-total-width').value = totalWidth;
+            document.getElementById('robot-total-length').value = totalLength;
+            document.getElementById('display-width').textContent = totalWidth + ' mm';
+            document.getElementById('display-length').textContent = totalLength + ' mm';
+        }
+
+        // Handle drag start on robot editor canvas
+        function getHandleAtPosition(x, y) {
+            const frontPx = ROBOT_DIMENSIONS.front * PIXELS_PER_MM;
+            const rearPx = ROBOT_DIMENSIONS.rear * PIXELS_PER_MM;
+            const leftPx = ROBOT_DIMENSIONS.left * PIXELS_PER_MM;
+            const rightPx = ROBOT_DIMENSIONS.right * PIXELS_PER_MM;
+            const handleRadius = 15;
+
+            // Check front handle
+            if (Math.abs(x - EDITOR_CENTER) < handleRadius && Math.abs(y - (EDITOR_CENTER - frontPx)) < handleRadius) {
+                return 'front';
+            }
+            // Check rear handle
+            if (Math.abs(x - EDITOR_CENTER) < handleRadius && Math.abs(y - (EDITOR_CENTER + rearPx)) < handleRadius) {
+                return 'rear';
+            }
+            // Check left handle
+            if (Math.abs(x - (EDITOR_CENTER - leftPx)) < handleRadius && Math.abs(y - EDITOR_CENTER) < handleRadius) {
+                return 'left';
+            }
+            // Check right handle
+            if (Math.abs(x - (EDITOR_CENTER + rightPx)) < handleRadius && Math.abs(y - EDITOR_CENTER) < handleRadius) {
+                return 'right';
+            }
+            return null;
+        }
+
+        // Update dimension from drag position
+        function updateDimensionFromDrag(handle, x, y) {
+            let newValue;
+            if (handle === 'front') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((EDITOR_CENTER - y) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.front = newValue;
+            } else if (handle === 'rear') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((y - EDITOR_CENTER) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.rear = newValue;
+            } else if (handle === 'left') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((EDITOR_CENTER - x) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.left = newValue;
+            } else if (handle === 'right') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((x - EDITOR_CENTER) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.right = newValue;
+            }
+
+            // Apply symmetry if enabled
+            if (isSymmetryMode) {
+                if (handle === 'front' || handle === 'rear') {
+                    ROBOT_DIMENSIONS.front = newValue;
+                    ROBOT_DIMENSIONS.rear = newValue;
+                } else if (handle === 'left' || handle === 'right') {
+                    ROBOT_DIMENSIONS.left = newValue;
+                    ROBOT_DIMENSIONS.right = newValue;
+                }
+            }
+        }
+
+        // Robot editor canvas mouse events
+        robotEditorCanvas.addEventListener('mousedown', (e) => {
+            const rect = robotEditorCanvas.getBoundingClientRect();
+            const scaleX = robotEditorCanvas.width / rect.width;
+            const scaleY = robotEditorCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            robotEditorDragging = getHandleAtPosition(x, y);
+        });
+
+        robotEditorCanvas.addEventListener('mousemove', (e) => {
+            const rect = robotEditorCanvas.getBoundingClientRect();
+            const scaleX = robotEditorCanvas.width / rect.width;
+            const scaleY = robotEditorCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            if (robotEditorDragging) {
+                updateDimensionFromDrag(robotEditorDragging, x, y);
+                updateDimensionInputs();
+                drawRobotEditor();
+            } else {
+                // Change cursor if hovering over a handle
+                const handle = getHandleAtPosition(x, y);
+                robotEditorCanvas.style.cursor = handle ? 'grab' : 'default';
+            }
+        });
+
+        robotEditorCanvas.addEventListener('mouseup', () => {
+            robotEditorDragging = null;
+        });
+
+        robotEditorCanvas.addEventListener('mouseleave', () => {
+            robotEditorDragging = null;
+        });
+
+        // Dimension input handlers
+        const frontInput = document.getElementById('robot-front');
+        const rearInput = document.getElementById('robot-rear');
+        const leftInput = document.getElementById('robot-left');
+        const rightInput = document.getElementById('robot-right');
+
+        function handleDimensionInput(type, value) {
+            const val = Math.max(1, Math.min(MAX_DIMENSION, parseInt(value) || 1));
+
+            if (type === 'front' || type === 'rear') {
+                ROBOT_DIMENSIONS.front = val;
+                ROBOT_DIMENSIONS.rear = val;
+            } else if (type === 'left' || type === 'right') {
+                ROBOT_DIMENSIONS.left = val;
+                ROBOT_DIMENSIONS.right = val;
+            }
+
+            updateDimensionInputs();
+            drawRobotEditor();
+        }
+
+        frontInput.addEventListener('input', (e) => {
+            handleDimensionInput('front', e.target.value);
+        });
+
+        rearInput.addEventListener('input', (e) => {
+            handleDimensionInput('rear', e.target.value);
+        });
+
+        leftInput.addEventListener('input', (e) => {
+            handleDimensionInput('left', e.target.value);
+        });
+
+        rightInput.addEventListener('input', (e) => {
+            handleDimensionInput('right', e.target.value);
+        });
+
+        // Symmetry mode toggle
+        document.getElementById('symmetry-mode').addEventListener('change', (e) => {
+            isSymmetryMode = e.target.checked;
+        });
+
+        // Reset button
+        document.getElementById('btn-reset-robot').addEventListener('click', () => {
+            ROBOT_DIMENSIONS.front = 125;
+            ROBOT_DIMENSIONS.rear = 125;
+            ROBOT_DIMENSIONS.left = 125;
+            ROBOT_DIMENSIONS.right = 125;
+            updateDimensionInputs();
+            drawRobotEditor();
+        });
+
+        // Modal open/close functions
+        const robotModal = document.getElementById('robot-modal');
+        const modalOpenBtn = document.getElementById('btn-toggle-robot-size');
+
+        function openRobotModal() {
+            loadRobotDimensions();
+            updateDimensionInputs();
+            drawRobotEditor();
+            robotModal.classList.add('active');
+        }
+
+        function closeRobotModal() {
+            robotModal.classList.remove('active');
+        }
+
+        // Modal button handlers
+        modalOpenBtn.addEventListener('click', openRobotModal);
+        document.getElementById('robot-modal-close').addEventListener('click', closeRobotModal);
+
+        // Save and close button
+        document.getElementById('btn-save-robot').addEventListener('click', () => {
+            saveRobotDimensions();
+            document.querySelector('#robot-info div').textContent = `Size: ${ROBOT_SIZE.width} x ${ROBOT_SIZE.height} mm`;
+            draw();
+            closeRobotModal();
+        });
+
+        // Click outside modal to close
+        robotModal.addEventListener('click', (e) => {
+            if (e.target === robotModal) {
+                closeRobotModal();
+            }
+        });
+
+        // Load robot dimensions on page load
+        window.addEventListener('load', () => {
+            loadRobotDimensions();
+            updateDimensionInputs();
+            calculateCenterOffset(); // Ensure center offset is calculated on load
+        });
+
+        // ================================================
+        // ROUTE MODE IMPROVEMENT - Clear previous route
+        // ================================================
+
+        // Store the current loaded route preview path
+        let currentRoutePreview = null;
+
+        // Updated route loading function to clear previous routes
+        function clearPreviousRoutePreview() {
+            if (currentRoutePreview) {
+                // The previous route is cleared by setting loadedRouteIndex = null
+                // This is handled in loadRoute function
+            }
+            currentRoutePreview = null;
+        }
+
+        // Override the loadRoute function to clear previous
+        const originalLoadRoute = loadRoute;
+        loadRoute = function(index) {
+            // Clear previous route preview first
+            clearPreviousRoutePreview();
+
+            // Call original loadRoute
+            const routes = getSavedRoutes();
+            const route = routes[index];
+            if (route) {
+                loadedRouteIndex = index;
+                currentRoutePreview = route;
+
+                // Clear current route state and odometry state
+                odometryOrigin = null;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+
+                // Load the route data into current state
+                routeOrigin = { ...route.origin };
+                routePoints = route.points.map(p => ({ ...p }));
+                routeLines = route.lines.map(l => ({
+                    start: { ...l.start },
+                    end: { ...l.end }
+                }));
+
+                // Update UI
+                document.getElementById('route-info').style.display = 'block';
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'block';
+                document.getElementById('loaded-route-name').textContent = route.name;
+
+                // Switch to route mode if not already
+                document.getElementById('mode-route').checked = true;
+                currentMode = 'route';
+
+                // Hide odometry info and show route info
+                document.getElementById('odometry-info').style.display = 'none';
+
+                draw();
+            }
+        };
+
+        // Unload route function to clear preview
+        const originalUnloadRoute = unloadRoute;
+        unloadRoute = function() {
+            loadedRouteIndex = null;
+            currentRoutePreview = null;
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+
+            document.getElementById('route-loaded-info').style.display = 'none';
+            document.getElementById('saved-routes-section').style.display = 'block';
+            updateSavedRoutesList();
+            draw();
+        };
+
         // Wheel diameter handler
+
         document.getElementById('wheel-diameter').addEventListener('input', (e) => {
             wheelDiameter = parseFloat(e.target.value) || 62.4;
             // Update current measurement whenever wheel diameter changes and there's an active line
@@ -2405,6 +3361,7 @@
                 routePoints = [];
                 routeLines = [];
                 routePendingLine = null;
+                savedLastNodeIndex = null;
                 routeIsPlanning = false;
 
                 document.getElementById('route-buttons').style.display = 'none';
@@ -2500,6 +3457,7 @@
                 routePoints = [];
                 routeLines = [];
                 routePendingLine = null;
+                savedLastNodeIndex = null;
 
                 // Load the route data into current state
                 routeOrigin = { ...route.origin };
@@ -2508,6 +3466,7 @@
                     start: { ...l.start },
                     end: { ...l.end }
                 }));
+                // lastNodeIndex handled by getLastNodeIndex()
 
                 // Update UI
                 document.getElementById('route-info').style.display = 'block';
