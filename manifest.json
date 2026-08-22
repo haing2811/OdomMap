@@ -1,0 +1,18 @@
+{
+  "name": "OdometryMap",
+  "short_name": "OdomMap",
+  "description": "Robot odometry mapping tool for RBRIZZ",
+  "start_url": "./OdomMap.html",
+  "display": "standalone",
+  "background_color": "#0F0C1F",
+  "theme_color": "#0F0C1F",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "Logo/iconrb.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

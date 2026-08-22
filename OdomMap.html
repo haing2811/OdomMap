@@ -1,0 +1,3541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OdomMap</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F0C1F">
+    <link rel="icon" type="image/png" href="Logo/map.png">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;  
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', 'Courier New', Courier, monospace;
+            background: #0F0C1F;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        #loading.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #000080;
+            border-top: 5px solid #4dd0e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading p {
+            margin-top: 20px;
+            color: #4dd0e1;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 15px;
+            background: #0F0C1F;
+            border-bottom: 2px solid #1b263b;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #header h1 {
+            font-size: 1.2rem;
+            color: #4dd0e1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #header h1 img {
+            height: 56px;
+            vertical-align: middle;
+        }
+
+        .slr-icon {
+            height: 56px;
+        }
+        .astro-icon{
+            height: 56px;
+        }
+        .header-title {
+            font-size: 1.2rem;
+            color: #4dd0e1;
+            font-weight: bold;
+        }
+
+        .inspired-by {
+            font-size: 1rem;
+            color: #ffffff;
+            vertical-align: middle;
+            margin: 0 8px;
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            color: #4dd0e1;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        select, input[type="number"] {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #0f3460;
+            background: #1a1a2e;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"] {
+            width: 100px;
+        }
+
+        #main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        #canvas-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #canvas {
+            border: 2px solid #0f3460;
+            cursor: crosshair;
+        }
+
+        #sidebar {
+            width: 300px;
+            background: #0d1b2a;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-left: 2px solid #1b263b;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            background: #1b263b;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .sidebar-section h3 {
+            color: #4dd0e1;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .btn, .sidebar-section h3, label, select, input, .measurement-item {
+            font-family: 'Orbitron', 'Courier New', Courier, monospace;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #4dd0e1;
+            color: #000080;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background: #00bcd4;
+        }
+
+        .btn-secondary {
+            background: #ffff99;
+            color: #000080;
+            font-weight: bold;
+        }
+
+        .btn-secondary:hover {
+            background: #ffeb3b;
+        }
+
+        .btn-danger {
+            background: #000080;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #4dd0e1;
+        }
+
+        .btn-active {
+            background: #4dd0e1 !important;
+            border-color: #4dd0e1 !important;
+        }
+
+        #measurements {
+            background: #1b263b;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        #measurements h3 {
+            color: #4dd0e1;
+            margin-bottom: 10px;
+        }
+
+        .measurement-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #0d1b2a;
+        }
+
+        .measurement-item:last-child {
+            border-bottom: none;
+        }
+
+        .measurement-value {
+            color: #4dd0e1;
+            font-weight: bold;
+        }
+
+        #robot-info {
+            font-size: 0.85rem;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .scale-info {
+            font-size: 0.8rem;
+            color: #ffffff;
+            margin-top: 10px;
+        }
+
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .toggle-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4dd0e1;
+        }
+
+        .toggle-item label {
+            cursor: pointer;
+        }
+
+        .field-select-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1b263b;
+            transition: background 0.3s;
+        }
+
+        .social-icon:hover {
+            background: #4dd0e1;
+        }
+
+        .hyperlink-box {
+            display: block;
+            padding: 10px 15px;
+            background: #000080;
+            color: #ffffff;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .hyperlink-box:hover {
+            background: #4dd0e1;
+            color: #000080;
+        }
+
+        #saved-routes-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-track {
+            background: #0d1b2a;
+            border-radius: 4px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-thumb {
+            background: #4dd0e1;
+            border-radius: 4px;
+        }
+
+        #saved-routes-list::-webkit-scrollbar-thumb:hover {
+            background: #00bcd4;
+        }
+
+        /* Firefox scrollbar support */
+        #saved-routes-list {
+            scrollbar-width: thin;
+            scrollbar-color: #4dd0e1 #0d1b2a;
+        }
+
+        .edge-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .edge-btn {
+            padding: 8px 6px;
+            border: 2px solid #0f3460;
+            border-radius: 5px;
+            background: #1a1a2e;
+            color: #4dd0e1;
+            font-family: 'Orbitron', 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .edge-btn:hover, .edge-btn.active {
+            background: #4dd0e1;
+            color: #000080;
+            border-color: #4dd0e1;
+        }
+
+        .edge-btn-top { grid-column: 1 / 3; }
+        .edge-btn-bottom { grid-column: 1 / 3; }
+
+        #robot-size-customizer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1b263b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4dd0e1;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-family: 'Orbitron', sans-serif;
+            width: 250px;
+        }
+        #robot-size-customizer h3 {
+            color: #4dd0e1;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .size-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .size-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .size-input-row input[type="number"] {
+            width: 70px;
+        }
+        .size-input-row input[type="range"] {
+            flex: 1;
+        }
+        #btn-close-customizer {
+            cursor: pointer;
+            background: #ff4444;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+        }
+        #btn-toggle-robot-size {
+            padding: 6px 12px;
+            background: #1a1a2e;
+            color: #4dd0e1;
+            border: 1px solid #4dd0e1;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s;
+        }
+        #btn-toggle-robot-size:hover {
+            background: #4dd0e1;
+            color: #000080;
+        }
+
+        /* Robot Customization Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .robot-modal {
+            background: #1b263b;
+            border: 2px solid #4dd0e1;
+            border-radius: 12px;
+            padding: 15px;
+            width: 550px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(77, 208, 225, 0.3);
+        }
+        .robot-modal h2 {
+            color: #4dd0e1;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .robot-modal-close {
+            cursor: pointer;
+            background: #ff4444;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        .robot-editor-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .robot-canvas-wrapper {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            background: #0d1b2a;
+            border: 2px solid #4dd0e1;
+            border-radius: 8px;
+        }
+        #robot-editor-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .robot-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 180px;
+            flex: 1;
+        }
+        .robot-modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .robot-modal-buttons .btn-save,
+        .robot-modal-buttons .btn-reset {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        .dimension-group {
+            background: #0d1b2a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .dimension-group h4 {
+            color: #4dd0e1;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        .dimension-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .dimension-row label {
+            min-width: 50px;
+            font-size: 0.75rem;
+        }
+        .dimension-row input[type="number"] {
+            width: 70px;
+            padding: 5px 6px;
+            font-size: 0.75rem;
+        }
+        .dimension-row span {
+            color: #4dd0e1;
+            font-size: 0.7rem;
+        }
+        .symmetry-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .symmetry-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #4dd0e1;
+        }
+        .symmetry-toggle label {
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-reset {
+            background: #ffff99;
+            color: #000080;
+            font-weight: bold;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .btn-reset:hover {
+            background: #ffeb3b;
+        }
+        .btn-save {
+            background: #4dd0e1;
+            color: #000080;
+            font-weight: bold;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .btn-save:hover {
+            background: #00bcd4;
+        }
+        .robot-dimensions-display {
+            margin-top: 8px;
+            padding: 8px;
+            background: #0d1b2a;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .robot-dimensions-display h4 {
+            color: #4dd0e1;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+        .dim-display-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+        .dim-display-row span:first-child {
+            color: #ffffff;
+        }
+        .dim-display-row span:last-child {
+            color: #ffff99;
+        }
+
+    </style>
+</head>
+<body oncontextmenu="return false">
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Loading field...</p>
+    </div>
+
+    <header id="header">
+        <h1><img src="Logo/iconrb.png" alt="RBRIZZ"><span class="inspired-by">inspired by</span><img src="Logo/slr.jpg" class="slr-icon" alt=""><img src="Logo/astro.png" class="astro-icon" alt=""></h1>
+        <div class="header-title">OdometryMap</div>
+        <div class="controls">
+            <button id="btn-install" style="display: none; padding: 6px 12px; background: #4dd0e1; color: #000080; border: none; border-radius: 5px; font-weight: bold; font-size: 0.8rem; cursor: pointer; font-family: 'Orbitron', 'Courier New', Courier, monospace;">Install App</button>
+            <div class="field-select-group">
+                <div class="control-group">
+                    <label for="year-select">Year:</label>
+                    <select id="year-select">
+                        <option value="2026" selected>2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="category-select">Category:</label>
+                    <select id="category-select">
+                        <option value="Elementary" selected>Elementary</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Senior">Senior</option>
+                        <option value="RoboSports">RoboSports</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="wheel-diameter">Wheel (mm):</label>
+                <input type="number" id="wheel-diameter" value="62.4" step="0.1">
+            </div>
+            <button id="btn-toggle-robot-size">Customize Robot</button>
+        </div>
+    </header>
+
+    <div id="main-container">
+        <!-- Robot Customization Modal -->
+        <div class="modal-overlay" id="robot-modal">
+            <div class="robot-modal">
+                <h2>Robot Customization <button class="robot-modal-close" id="robot-modal-close">X</button></h2>
+                <div class="robot-editor-container">
+                    <div class="robot-canvas-wrapper">
+                        <canvas id="robot-editor-canvas"></canvas>
+                    </div>
+                    <div class="robot-controls">
+                        <div class="robot-modal-buttons">
+                            <button class="btn-save" id="btn-save-robot">Save & Close</button>
+                            <button class="btn-reset" id="btn-reset-robot">Reset</button>
+                        </div>
+                        <div class="dimension-group">
+                            <h4>Dimensions (from center)</h4>
+                            <div class="dimension-row">
+                                <label>Front:</label>
+                                <input type="number" id="robot-front" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Rear:</label>
+                                <input type="number" id="robot-rear" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Left:</label>
+                                <input type="number" id="robot-left" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Right:</label>
+                                <input type="number" id="robot-right" value="125" min="1" max="250">
+                                <span>mm</span>
+                            </div>
+                            <div class="symmetry-toggle">
+                                <input type="checkbox" id="symmetry-mode" checked>
+                                <label for="symmetry-mode">Symmetry Mode</label>
+                            </div>
+                        </div>
+                        <div class="dimension-group">
+                            <h4>Overall Dimensions</h4>
+                            <div class="dimension-row">
+                                <label>Width:</label>
+                                <input type="number" id="robot-total-width" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <span>mm</span>
+                            </div>
+                            <div class="dimension-row">
+                                <label>Length:</label>
+                                <input type="number" id="robot-total-length" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <span>mm</span>
+                            </div>
+                        </div>
+                        <div class="robot-dimensions-display">
+                            <h4>Current Robot Size</h4>
+                            <div class="dim-display-row">
+                                <span>Total Width:</span>
+                                <span id="display-width">250 mm</span>
+                            </div>
+                            <div class="dim-display-row">
+                                <span>Total Length:</span>
+                                <span id="display-length">250 mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div id="sidebar">
+            <!-- Follow Us - no box, no text -->
+            <div class="social-links" style="display: flex; gap: 15px; justify-content: center; padding: 10px 0; margin-bottom: 10px;">
+                <a href="https://www.instagram.com/robot_rizz/" target="_blank" class="social-icon" title="Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                <a href="https://www.youtube.com/@rizzler-robots" target="_blank" class="social-icon" title="YouTube">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                </a>
+                <a href="https://github.com/haing2811/robotrizz_odometry_map" target="_blank" class="social-icon" title="GitHub">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Tools</h3>
+                <button class="btn btn-primary" id="btn-new-line">New Line</button>
+                <button class="btn btn-danger" id="btn-delete">Delete Last</button>
+                <button class="btn btn-secondary" id="btn-clear-all">Clear All</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Display</h3>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <input type="radio" name="mode" id="mode-normal" value="normal" checked>
+                        <label for="mode-normal">Normal Mode</label>
+                    </div>
+                    <div class="toggle-item">
+                        <input type="radio" name="mode" id="mode-odometry" value="odometry">
+                        <label for="mode-odometry">Odometry Mode</label>
+                    </div>
+                    <div class="toggle-item">
+                        <input type="radio" name="mode" id="mode-route" value="route">
+                        <label for="mode-route">Route Mode</label>
+                    </div>
+                </div>
+                <div class="toggle-item" style="margin-top: 10px;">
+                    <input type="checkbox" id="show-triangle">
+                    <label for="show-triangle">Show Right Triangle</label>
+                </div>
+                <div class="toggle-item" style="margin-top: 6px;">
+                    <input type="checkbox" id="show-grid">
+                    <label for="show-grid">Show Grid</label>
+                </div>
+                <div class="toggle-item" style="margin-top: 6px;">
+                    <label for="grid-opacity-slider">Grid Opacity: <span id="grid-opacity-value">40%</span></label>
+                    <input type="range" id="grid-opacity-slider" min="0" max="100" value="40" style="width: 80px; margin-left: 8px;">
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="odometry-info" style="display: none;">
+                <h3>Odometry</h3>
+                <div class="measurement-item">
+                    <span>X:</span>
+                    <span class="measurement-value" id="odo-x">-- mm</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Y:</span>
+                    <span class="measurement-value" id="odo-y">-- mm</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Angle:</span>
+                    <span class="measurement-value" id="odo-angle">-- °</span>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button class="btn btn-secondary" id="btn-add-odometry-point" style="flex:1; padding: 6px;">Add Point</button>
+                    <button class="btn btn-secondary" id="btn-add-odometry-line" style="flex:1; padding: 6px;">Add Line</button>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button class="btn btn-primary" id="btn-record" style="flex:1; padding: 6px;">Record</button>
+                    <button class="btn btn-danger" id="btn-stop" style="flex:1; padding: 6px;" disabled>Stop</button>
+                </div>
+                <div id="record-output" style="margin-top: 10px; display: none;">
+                    <label style="font-size: 0.85rem; color: #ffffff;">Python Output:</label>
+                    <textarea id="python-output" readonly style="width: 100%; height: 80px; margin-top: 5px; background: #1a1a2e; color: #4dd0e1; border: 1px solid #0f3460; border-radius: 5px; font-family: monospace; font-size: 0.8rem; resize: none;"></textarea>
+                    <button class="btn btn-secondary" id="btn-copy" style="margin-top: 5px; padding: 5px;">Copy to Clipboard</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="route-info" style="display: none;">
+                <h3>Route Planning</h3>
+                <div class="measurement-item">
+                    <span>Points:</span>
+                    <span class="measurement-value" id="route-point-count">0</span>
+                </div>
+                <div id="route-buttons" style="margin-top: 10px; display: none;">
+                    <button class="btn btn-primary" id="btn-save-route" style="margin-bottom: 5px;">Save Route</button>
+                    <button class="btn btn-danger" id="btn-cancel-route">Cancel</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="saved-routes-section" style="display: none;">
+                <h3>Saved Routes</h3>
+                <div id="saved-routes-list" style="height: 200px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid #4dd0e1; border-radius: 5px; padding: 5px;"></div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-danger" id="btn-delete-all-routes" style="flex:1; padding: 5px; font-size: 0.8rem;">Delete All</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="route-loaded-info" style="display: none;">
+                <h3>Loaded Route</h3>
+                <div id="loaded-route-name" style="color: #ff9900; font-weight: bold; margin-bottom: 5px;"></div>
+                <button class="btn" id="btn-unload-route" style="padding: 5px; font-size: 0.8rem; background: #4dd0e1; color: #000080; font-weight: bold;">
+                    Unload Route
+                </button>
+            </div>
+
+            <div class="sidebar-section" id="edge-measure-section">
+                <h3>Edge Measure</h3>
+                <div class="edge-btn-group">
+                    <button class="edge-btn edge-btn-top" id="edge-btn-top">&#9650; Top</button>
+                    <button class="edge-btn" id="edge-btn-left">&#9664; Left</button>
+                    <button class="edge-btn" id="edge-btn-right">Right &#9654;</button>
+                    <button class="edge-btn edge-btn-bottom" id="edge-btn-bottom">&#9660; Bottom</button>
+                </div>
+                <button class="btn btn-secondary" id="btn-clear-edge-lines" style="margin-top:8px; padding:5px; font-size:0.8rem;">Clear Edge Lines</button>
+            </div>
+
+            <div class="sidebar-section" id="saved-lines-section">
+                <h3>Saved Lines</h3>
+                <button class="btn btn-primary" id="btn-save-lines" style="margin-bottom:6px; padding:6px; font-size:0.85rem;">&#128190; Save Current Lines</button>
+                <div id="saved-lines-list" style="max-height:160px; overflow-y:auto; margin-bottom:8px; border:1px solid #4dd0e1; border-radius:5px; padding:5px;"></div>
+                <button class="btn btn-danger" id="btn-delete-all-lines" style="padding:5px; font-size:0.8rem;">Delete All</button>
+            </div>
+
+            <div class="sidebar-section" id="measurements">
+                <h3>Current Measurement</h3>
+                <div class="measurement-item">
+                    <span>Distance:</span>
+                    <span class="measurement-value" id="dist-value">-- mm</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Angle (abs):</span>
+                    <span class="measurement-value" id="angle-value">-- °</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Wheel Rotations:</span>
+                    <span class="measurement-value" id="rotations-value">--</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Wheel Degrees:</span>
+                    <span class="measurement-value" id="degrees-value">-- °</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Horizontal:</span>
+                    <span class="measurement-value" id="h-value">-- mm</span>
+                </div>
+                <div class="measurement-item">
+                    <span>Vertical:</span>
+                    <span class="measurement-value" id="v-value">-- mm</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>HyperLib Odometry</h3>
+                <a href="https://github.com/Lamcao2109/HYPERLIBwro" target="_blank" class="hyperlink-box">
+                    HYPERLIBwro
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Field dimensions in mm
+        const FIELD_WIDTH_MM = 2362;
+        const FIELD_HEIGHT_MM = 1143;
+        let ROBOT_SIZE = { width: 250, height: 250 };
+
+
+        // Canvas scale
+        let scale = 1;
+        let canvasWidth, canvasHeight;
+        let edgeMeasureMode = null; // 'top' | 'bottom' | 'left' | 'right' | null
+        let edgeLines = []; // {edge, px, py, distMM}
+        let showGrid = false;
+
+        // State
+        let startPoint = null;
+        let endPoint = null;
+        let mousePos = { x: 0, y: 0 };
+        let isMouseOver = false;
+        let lines = [];
+        let wheelDiameter = 62.4;
+        let fieldImg = null;
+
+        // Display toggles
+        let currentMode = 'normal'; // 'normal', 'odometry', 'route'
+        let showTriangle = false;
+        const showDistance = true;
+        const showAngle = true;
+        const showLegs = true;
+        const showWheelDeg = false;
+        let gridOpacity = 0.4;
+
+        // Odometry state
+        let odometryOrigin = null;
+        let odometryOriginAngle = 0; // Rotation angle of the Y-axis (0 = standard up)
+        let odometryPoints = [];
+        let odometryLines = [];
+        let odometryAddMode = null; // 'point' or 'line'
+        let isAngleIndicatorActive = false; // True after origin placed, before angle set
+
+        // Route state
+        let routeOrigin = null;
+        let routePoints = [];
+        let routeLines = [];
+        let routeIsPlanning = false;
+        let routePendingLine = null;
+        let savedRoutes = [];
+        let hoveredNodeIndex = null;
+        let draggedNodeIndex = null;
+
+        // Get actual last node index - ALWAYS returns the true last point
+        function getLastNodeIndex() {
+            return routePoints.length - 1;
+        }
+
+        // Recording state
+        let isRecording = false;
+        let recordedPoints = [];
+
+        // Start box positions per year/category (field coordinates in mm)
+        // Each entry: [x_center, y_center] in mm
+        const START_BOX_POSITIONS = {
+            '2026': {
+                'Elementary': [500, 571.5],  // Example positions - adjust based on actual field
+                'Junior': [500, 571.5],
+                'Senior': [500, 571.5],
+                'RoboSports': [500, 571.5]
+            },
+            '2025': {
+                'Elementary': [400, 571.5],
+                'Junior': [400, 571.5],
+                'Senior': [400, 571.5],
+                'RoboSports': [400, 571.5]
+            },
+            '2024': {
+                'Elementary': [350, 571.5],
+                'Junior': [350, 571.5],
+                'Senior': [350, 571.5],
+                'RoboSports': [350, 571.5]
+            },
+            '2023': {
+                'Elementary': [400, 571.5],
+                'Junior': [400, 571.5],
+                'Senior': [400, 571.5],
+                'RoboSports': [400, 571.5]
+            }
+        };
+
+        // Get snapped origin position (nearest start box center)
+        function getSnappedOrigin(x, y) {
+            const year = document.getElementById('year-select').value;
+            const category = document.getElementById('category-select').value;
+            const boxPos = START_BOX_POSITIONS[year]?.[category] || [500, 571.5];
+            const snapDistance = 150; // Snap within 150px
+
+            const boxCanvasX = toCanvas(boxPos[0]);
+            const boxCanvasY = toCanvas(boxPos[1]);
+
+            const dx = x - boxCanvasX;
+            const dy = y - boxCanvasY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < snapDistance) {
+                return { x: boxCanvasX, y: boxCanvasY, snapped: true };
+            }
+            return { x, y, snapped: false };
+        }
+
+        // Check if point is near axis (within snap threshold) - works with rotated axes
+        function isNearAxis(canvasX, canvasY, originX, originY, threshold = 30) {
+            const dx = canvasX - originX;
+            const dy = canvasY - originY;
+            const angleRad = odometryOriginAngle * Math.PI / 180;
+
+            // Project point onto the rotated Y-axis direction
+            const projY = (dx * Math.cos(angleRad) + dy * Math.sin(angleRad));
+            // Distance from rotated Y-axis = perpendicular component
+            const distToYAxis = Math.abs(-dx * Math.sin(angleRad) + dy * Math.cos(angleRad));
+
+            // Project point onto the rotated X-axis direction (perpendicular to Y)
+            const projX = (dx * Math.cos(angleRad + Math.PI/2) + dy * Math.sin(angleRad + Math.PI/2));
+            // Distance from rotated X-axis
+            const distToXAxis = Math.abs(dx * Math.sin(angleRad + Math.PI/2) - dy * Math.cos(angleRad + Math.PI/2));
+
+            // Check if near Y-axis (distance to Y-axis line is small, and projection is not too far)
+            if (distToYAxis < threshold && projY > -threshold) {
+                return { type: 'rotatedY', value: projY };
+            }
+            // Check if near X-axis
+            if (distToXAxis < threshold && projX > -threshold) {
+                return { type: 'rotatedX', value: projX };
+            }
+            return null;
+        }
+
+        // Snap point to nearest rotated axis or origin
+        function snapToAxis(canvasX, canvasY, originX, originY, threshold = 30) {
+            const dx = canvasX - originX;
+            const dy = canvasY - originY;
+            const angleRad = odometryOriginAngle * Math.PI / 180;
+
+            // Project onto rotated axes
+            const projY = dx * Math.cos(angleRad) + dy * Math.sin(angleRad);
+            const projX = dx * Math.cos(angleRad + Math.PI/2) + dy * Math.sin(angleRad + Math.PI/2);
+
+            // Distance to each axis line
+            const distToYAxis = Math.abs(-dx * Math.sin(angleRad) + dy * Math.cos(angleRad));
+            const distToXAxis = Math.abs(dx * Math.sin(angleRad + Math.PI/2) - dy * Math.cos(angleRad + Math.PI/2));
+
+            // Check if near origin first
+            const distToOrigin = Math.sqrt(dx * dx + dy * dy);
+            if (distToOrigin < threshold) {
+                return { x: originX, y: originY };
+            }
+
+            // Snap to Y-axis (project Y, keep X component on the line)
+            if (distToYAxis < threshold) {
+                return {
+                    x: originX + projY * Math.cos(angleRad),
+                    y: originY + projY * Math.sin(angleRad)
+                };
+            }
+
+            // Snap to X-axis
+            if (distToXAxis < threshold) {
+                return {
+                    x: originX + projX * Math.cos(angleRad + Math.PI/2),
+                    y: originY + projX * Math.sin(angleRad + Math.PI/2)
+                };
+            }
+
+            return { x: canvasX, y: canvasY };
+        }
+
+        // Colors
+        const COLORS = {
+            field: '#0d1b2a',
+            grid: '#1b263b',
+            line: '#ff0000',
+            triangleLegs: '#4dd0e1',
+            robot: 'rgba(0, 0, 128, 0.1)',
+            crosshair: '#4dd0e1',
+            startPoint: '#000080',
+            endPoint: '#ff0000',
+            text: '#ff0000',
+            angleArc: '#4dd0e1'
+        };
+
+        // Initialize canvas
+        function initCanvas() {
+            const container = document.getElementById('canvas-container');
+            const maxWidth = Math.max(container.clientWidth - 40, 400);
+            const maxHeight = Math.max(container.clientHeight - 40, 200);
+
+            const scaleX = maxWidth / FIELD_WIDTH_MM;
+            const scaleY = maxHeight / FIELD_HEIGHT_MM;
+            scale = Math.min(scaleX, scaleY, 1);
+            scale = Math.max(scale, 0.3);
+
+            canvasWidth = Math.round(FIELD_WIDTH_MM * scale);
+            canvasHeight = Math.round(FIELD_HEIGHT_MM * scale);
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            canvas.style.width = canvasWidth + 'px';
+            canvas.style.height = canvasHeight + 'px';
+        }
+
+        function toMM(px) {
+            return px / scale;
+        }
+
+        function toCanvas(mm) {
+            return mm * scale;
+        }
+
+        // Draw angle as blue text with white outline below starting point
+        function drawAngleText(start, end) {
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const lineAngle = Math.atan2(dy, dx);
+            let absAngleDeg = Math.abs(lineAngle * 180 / Math.PI);
+            if (absAngleDeg > 90) {
+                absAngleDeg = 180 - absAngleDeg;
+            }
+
+            const text = absAngleDeg.toFixed(1) + '°';
+            ctx.font = 'bold 16px Orbitron, Courier New, monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Clamp position inside canvas
+            const margin = 30;
+            const tx = Math.max(margin, Math.min(canvasWidth - margin, start.x));
+            const ty = Math.max(margin, Math.min(canvasHeight - margin, start.y + 25));
+
+            // White outline
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.strokeText(text, tx, ty);
+
+            // Red fill
+            ctx.fillStyle = '#ff0000';
+            ctx.fillText(text, tx, ty);
+        }
+
+        // Draw line with white outline for visibility
+        function drawLineWithOutline(x1, y1, x2, y2, color, lineWidth, outlineWidth) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = outlineWidth;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        // Draw text with white outline
+        function drawTextWithOutline(text, x, y, fontSize, color) {
+            ctx.font = `bold ${fontSize}px Orbitron, Courier New, monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // White outline
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.strokeText(text, x, y);
+
+            // Red fill
+            ctx.fillStyle = color || COLORS.text;
+            ctx.fillText(text, x, y);
+        }
+
+        // Draw angle indicator bar (rotating bar to set angle) - follows mouse
+        function drawAngleIndicatorBar() {
+            if (!isMouseOver) return;
+
+            const barLength = 80;
+            const arrowSize = 12;
+
+            // Calculate angle from origin to mouse position
+            // 0° = up, 90° = right, 180° = down, -90° = left
+            const dx = mousePos.x - odometryOrigin.x;
+            const dy = mousePos.y - odometryOrigin.y;
+            let angleDeg = Math.atan2(dx, -dy) * 180 / Math.PI;
+
+            // Constrain to -180 to 180 range
+            if (angleDeg > 180) angleDeg -= 360;
+            if (angleDeg < -180) angleDeg += 360;
+
+            // Snap to major angles while dragging
+            const snapThreshold = 10;
+            const majorAngles = [0, 90, 180, -90];
+            for (const targetAngle of majorAngles) {
+                let diff = angleDeg - targetAngle;
+                while (diff > 180) diff -= 360;
+                while (diff < -180) diff += 360;
+                if (Math.abs(diff) < snapThreshold) {
+                    angleDeg = targetAngle;
+                    break;
+                }
+            }
+
+            const angleRad = angleDeg * Math.PI / 180;
+
+            // Draw the rotating bar from origin toward mouse position
+            // For 0°=up, use sin for x component and -cos for y component
+            const endX = odometryOrigin.x + barLength * Math.sin(angleRad);
+            const endY = odometryOrigin.y - barLength * Math.cos(angleRad);
+
+            // Draw bar with white outline
+            drawLineWithOutline(odometryOrigin.x, odometryOrigin.y, endX, endY, '#000080', 4, 7);
+
+            // Draw arrow head at the end (pointing in direction of angle)
+            const arrowAngle1 = Math.atan2(-Math.cos(angleRad), Math.sin(angleRad)) + Math.PI * 0.8;
+            const arrowAngle2 = Math.atan2(-Math.cos(angleRad), Math.sin(angleRad)) - Math.PI * 0.8;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX + arrowSize * Math.cos(arrowAngle1), endY + arrowSize * Math.sin(arrowAngle1));
+            ctx.lineTo(endX + arrowSize * Math.cos(arrowAngle2), endY + arrowSize * Math.sin(arrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#000080';
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX + (arrowSize - 3) * Math.cos(arrowAngle1), endY + (arrowSize - 3) * Math.sin(arrowAngle1));
+            ctx.lineTo(endX + (arrowSize - 3) * Math.cos(arrowAngle2), endY + (arrowSize - 3) * Math.sin(arrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Draw the rotated Y-axis based on current angle
+        function drawRotatedYAxis() {
+            const angleRad = odometryOriginAngle * Math.PI / 180;
+
+            // Y-axis points in direction of angle (0°=up, 90°=right, 180°=down, -90°=left)
+            // Using: yDirX = sin(angle), yDirY = -cos(angle)
+            // When angle=0: yDirX=0, yDirY=-1 (UP)
+            const yDirX = Math.sin(angleRad);
+            const yDirY = -Math.cos(angleRad);
+
+            // Find intersection with canvas edges for Y-axis (both directions)
+            const yIntersects = getAxisIntersections(odometryOrigin.x, odometryOrigin.y, yDirX, yDirY);
+            const yEnd1 = yIntersects[0];
+            const yEnd2 = yIntersects[1];
+
+            // Draw Y-axis (0° to 180° line)
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.moveTo(yEnd1.x, yEnd1.y);
+            ctx.lineTo(yEnd2.x, yEnd2.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Y-axis arrowhead at 0° direction
+            const arrowX = odometryOrigin.x + 40 * yDirX;
+            const arrowY = odometryOrigin.y + 40 * yDirY;
+            const arrowAngle1 = Math.atan2(yDirY, yDirX) + Math.PI * 0.85;
+            const arrowAngle2 = Math.atan2(yDirY, yDirX) - Math.PI * 0.85;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + 14 * Math.cos(arrowAngle1), arrowY + 14 * Math.sin(arrowAngle1));
+            ctx.lineTo(arrowX + 14 * Math.cos(arrowAngle2), arrowY + 14 * Math.sin(arrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#4dd0e1';
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + 10 * Math.cos(arrowAngle1), arrowY + 10 * Math.sin(arrowAngle1));
+            ctx.lineTo(arrowX + 10 * Math.cos(arrowAngle2), arrowY + 10 * Math.sin(arrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+
+            // X-axis is 90° from Y-axis (perpendicular)
+            // When angle=0: X points right (90°)
+            const xDirX = Math.cos(angleRad);
+            const xDirY = Math.sin(angleRad);
+
+            // Find intersection with canvas edges for X-axis
+            const xIntersects = getAxisIntersections(odometryOrigin.x, odometryOrigin.y, xDirX, xDirY);
+            const xEnd1 = xIntersects[0];
+            const xEnd2 = xIntersects[1];
+
+            // Draw X-axis (90° to -90° line)
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.moveTo(xEnd1.x, xEnd1.y);
+            ctx.lineTo(xEnd2.x, xEnd2.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // X-axis arrowhead at 90° direction
+            const xArrowX = odometryOrigin.x + 40 * xDirX;
+            const xArrowY = odometryOrigin.y + 40 * xDirY;
+            const xArrowAngle1 = Math.atan2(xDirY, xDirX) + Math.PI * 0.85;
+            const xArrowAngle2 = Math.atan2(xDirY, xDirX) - Math.PI * 0.85;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(xArrowX, xArrowY);
+            ctx.lineTo(xArrowX + 12 * Math.cos(xArrowAngle1), xArrowY + 12 * Math.sin(xArrowAngle1));
+            ctx.lineTo(xArrowX + 12 * Math.cos(xArrowAngle2), xArrowY + 12 * Math.sin(xArrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#4dd0e1';
+            ctx.beginPath();
+            ctx.moveTo(xArrowX, xArrowY);
+            ctx.lineTo(xArrowX + 9 * Math.cos(xArrowAngle1), xArrowY + 9 * Math.sin(xArrowAngle1));
+            ctx.lineTo(xArrowX + 9 * Math.cos(xArrowAngle2), xArrowY + 9 * Math.sin(xArrowAngle2));
+            ctx.closePath();
+            ctx.fill();
+
+            // Label axes with degree values
+            // Y-axis: 0° at positive end, 180° at negative end
+            drawTextWithOutline('0°', odometryOrigin.x + 50 * yDirX, odometryOrigin.y + 50 * yDirY, 14, '#4dd0e1');
+            drawTextWithOutline('180°', odometryOrigin.x - 60 * yDirX, odometryOrigin.y - 60 * yDirY, 14, '#4dd0e1');
+            // X-axis: 90° at positive end, -90° at negative end
+            drawTextWithOutline('90°', odometryOrigin.x + 50 * xDirX, odometryOrigin.y + 50 * xDirY, 14, '#4dd0e1');
+            drawTextWithOutline('-90°', odometryOrigin.x - 60 * xDirX, odometryOrigin.y - 60 * xDirY, 14, '#4dd0e1');
+        }
+
+        // Calculate where an axis line from origin intersects canvas edges
+        function getAxisIntersections(originX, originY, dirX, dirY) {
+            const intersections = [];
+            const margin = 20;
+
+            // Check intersection with all four canvas edges
+            // Top edge (y = margin)
+            if (dirY !== 0) {
+                const t1 = (margin - originY) / dirY;
+                const ix = originX + t1 * dirX;
+                if (ix >= -margin && ix <= canvasWidth + margin) {
+                    intersections.push({ x: ix, y: margin });
+                }
+            }
+            // Bottom edge (y = canvasHeight - margin)
+            if (dirY !== 0) {
+                const t2 = (canvasHeight - margin - originY) / dirY;
+                const ix = originX + t2 * dirX;
+                if (ix >= -margin && ix <= canvasWidth + margin) {
+                    intersections.push({ x: ix, y: canvasHeight - margin });
+                }
+            }
+            // Left edge (x = margin)
+            if (dirX !== 0) {
+                const t3 = (margin - originX) / dirX;
+                const iy = originY + t3 * dirY;
+                if (iy >= -margin && iy <= canvasHeight + margin) {
+                    intersections.push({ x: margin, y: iy });
+                }
+            }
+            // Right edge (x = canvasWidth - margin)
+            if (dirX !== 0) {
+                const t4 = (canvasWidth - margin - originX) / dirX;
+                const iy = originY + t4 * dirY;
+                if (iy >= -margin && iy <= canvasHeight + margin) {
+                    intersections.push({ x: canvasWidth - margin, y: iy });
+                }
+            }
+
+            // If we got 2 intersections, we're good. Otherwise add points along the direction
+            if (intersections.length < 2) {
+                intersections.push({ x: originX + dirX * 400, y: originY + dirY * 400 });
+                intersections.push({ x: originX - dirX * 400, y: originY - dirY * 400 });
+            }
+
+            return intersections;
+        }
+
+        // Calculate odometry coordinates based on rotated axes
+        // 0° = up (Y+), 90° = right (X+), 180° = down (Y-), -90° = left (X-)
+        function calculateRotatedCoordinates(canvasX, canvasY) {
+            const dx = canvasX - odometryOrigin.x;
+            const dy = canvasY - odometryOrigin.y;
+            const angleRad = odometryOriginAngle * Math.PI / 180;
+
+            // X-axis points at angle: (cos(angle), sin(angle))
+            // Y-axis points at angle-90° from X, which is (sin(angle), -cos(angle))
+            const odoX = (dx * Math.cos(angleRad) + dy * Math.sin(angleRad)) / scale;
+            const odoY = (dx * Math.sin(angleRad) - dy * Math.cos(angleRad)) / scale;
+
+            return { odoX, odoY };
+        }
+
+        function drawLineWithInfo(lineData, isActive = false) {
+            const start = lineData.start;
+            const end = lineData.end;
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const dist = calculateDistance(start, end);
+            const rotations = dist / (wheelDiameter * Math.PI);
+            const wheelDeg = rotations * 360;
+            const lineWidth = isActive ? 5 : 3;
+            const outlineWidth = lineWidth + 3;
+            const pointOuter = isActive ? 7 : 5;
+            const pointInner = isActive ? 5 : 3;
+
+            // Draw triangle legs if enabled
+            if (showTriangle) {
+                const hPoint = { x: end.x, y: start.y };
+                const vPoint = { x: start.x, y: end.y };
+
+                // Horizontal leg with outline
+                drawLineWithOutline(start.x, start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+
+                // Vertical leg with outline
+                drawLineWithOutline(start.x, start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+
+                // Leg distance labels
+                if (showLegs) {
+                    const hDist = Math.abs(toMM(dx));
+                    const vDist = Math.abs(toMM(dy));
+
+                    // Horizontal leg distance - red text with white outline
+                    const labelX = (start.x + hPoint.x) / 2;
+                    drawTextWithOutline(Math.round(hDist) + 'mm', labelX, start.y - 12, 14, '#ff0000');
+
+                    // Vertical leg distance - red text with white outline
+                    ctx.save();
+                    ctx.translate(start.x - 22, (start.y + vPoint.y) / 2);
+                    ctx.rotate(-Math.PI / 2);
+                    drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                    ctx.restore();
+                }
+            }
+
+            // Draw angle as blue text below start point
+            if (showAngle) {
+                drawAngleText(start, end);
+            }
+
+            // Draw main line with white outline (bright red)
+            drawLineWithOutline(start.x, start.y, end.x, end.y, COLORS.line, lineWidth, outlineWidth);
+
+            // Draw distance label (red with white outline)
+            if (showDistance) {
+                const midX = (start.x + end.x) / 2;
+                const midY = (start.y + end.y) / 2;
+                drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, '#ff0000');
+            }
+
+            // Draw wheel degrees label (red with white outline)
+            if (showWheelDeg) {
+                const midX = (start.x + end.x) / 2;
+                const midY = (start.y + end.y) / 2;
+                drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, '#ff0000');
+            }
+
+            // Draw points
+            drawPoint(start, COLORS.startPoint, pointOuter, pointInner);
+            drawPoint(end, COLORS.endPoint, pointOuter, pointInner);
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = COLORS.field;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw field image if loaded
+            if (fieldImg && fieldImg.complete && fieldImg.naturalWidth > 0) {
+                ctx.drawImage(fieldImg, 0, 0, canvasWidth, canvasHeight);
+                // Semi-transparent grid overlay
+                ctx.globalAlpha = 0.4;
+            } else {
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw grid only when showGrid is enabled (in any mode)
+            if (showGrid) {
+                ctx.strokeStyle = COLORS.grid;
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = gridOpacity;
+
+                for (let x = 0; x <= FIELD_WIDTH_MM; x += 100) {
+                    ctx.beginPath();
+                    ctx.moveTo(toCanvas(x), 0);
+                    ctx.lineTo(toCanvas(x), canvasHeight);
+                    ctx.stroke();
+                }
+
+                for (let y = 0; y <= FIELD_HEIGHT_MM; y += 100) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, toCanvas(y));
+                    ctx.lineTo(canvasWidth, toCanvas(y));
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
+
+            // Reset alpha for drawing elements
+            ctx.globalAlpha = 1;
+
+            // Draw odometry origin if set
+            if (currentMode === 'odometry' && odometryOrigin) {
+                // Draw origin point - white outer, black inner (same size as other points)
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(odometryOrigin.x, odometryOrigin.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(odometryOrigin.x, odometryOrigin.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label "origin" above (white outline, black text)
+                ctx.font = 'bold 12px Orbitron, Courier New, monospace';
+                ctx.textAlign = 'center';
+                drawTextWithOutline('origin', odometryOrigin.x, odometryOrigin.y - 20, 12, '#000000');
+
+                // Label "(0, 0)" below (white outline, black text)
+                drawTextWithOutline('(0, 0)', odometryOrigin.x, odometryOrigin.y + 28, 12, '#000000');
+
+                // Draw angle indicator bar if active (waiting for angle to be set)
+                if (isAngleIndicatorActive) {
+                    drawAngleIndicatorBar();
+                } else if (odometryOrigin) {
+                    // Always draw the rotated Y-axis arrow when origin is set
+                    drawRotatedYAxis();
+                }
+            }
+
+            // Draw "place origin" prompt when origin not yet placed in odometry mode
+            if (currentMode === 'odometry' && !odometryOrigin && isMouseOver) {
+                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Navy text with white outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
+                ctx.fillStyle = '#000080';
+                ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
+            }
+
+            
+            // Draw "place origin" prompt when origin not yet placed in route mode
+            if (currentMode === 'route' && !routeOrigin && isMouseOver) {
+                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Navy text with white outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
+                ctx.fillStyle = '#000080';
+                ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
+            }
+
+            // Draw odometry points (white outer, navy inner)
+            odometryPoints.forEach(point => {
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000080';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label with rotated coordinate
+                const coords = calculateRotatedCoordinates(point.x, point.y);
+                drawTextWithOutline(`(${coords.odoX.toFixed(0)}, ${coords.odoY.toFixed(0)})`, point.x, point.y - 16, 14, '#000080');
+            });
+
+            // Draw odometry lines (thinner, red like hover)
+            odometryLines.forEach(odoLine => {
+                // Draw triangle legs if enabled
+                if (showTriangle) {
+                    const hPoint = { x: odoLine.end.x, y: odoLine.start.y };
+                    const vPoint = { x: odoLine.start.x, y: odoLine.end.y };
+
+                    // Horizontal leg with outline
+                    drawLineWithOutline(odoLine.start.x, odoLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+
+                    // Vertical leg with outline
+                    drawLineWithOutline(odoLine.start.x, odoLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+
+                    // Leg distance labels
+                    if (showLegs) {
+                        const hDist = Math.abs(toMM(odoLine.end.x - odoLine.start.x));
+                        const vDist = Math.abs(toMM(odoLine.end.y - odoLine.start.y));
+
+                        // Horizontal leg distance
+                        const labelX = (odoLine.start.x + hPoint.x) / 2;
+                        drawTextWithOutline(Math.round(hDist) + 'mm', labelX, odoLine.start.y - 12, 14, '#ff0000');
+
+                        // Vertical leg distance
+                        ctx.save();
+                        ctx.translate(odoLine.start.x - 22, (odoLine.start.y + vPoint.y) / 2);
+                        ctx.rotate(-Math.PI / 2);
+                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                        ctx.restore();
+                    }
+                }
+
+                drawLineWithOutline(odoLine.start.x, odoLine.start.y, odoLine.end.x, odoLine.end.y, COLORS.line, 3, 6);
+
+                // Label start point with rotated coordinate
+                const startCoords = calculateRotatedCoordinates(odoLine.start.x, odoLine.start.y);
+                drawTextWithOutline(`(${startCoords.odoX.toFixed(0)}, ${startCoords.odoY.toFixed(0)})`, odoLine.start.x, odoLine.start.y - 16, 14, '#000080');
+
+                // Label end point with rotated coordinate
+                const endCoords = calculateRotatedCoordinates(odoLine.end.x, odoLine.end.y);
+                drawTextWithOutline(`(${endCoords.odoX.toFixed(0)}, ${endCoords.odoY.toFixed(0)})`, odoLine.end.x, odoLine.end.y - 16, 14, '#000080');
+            });
+
+            // Draw recorded points during recording mode (and after stop)
+            if (currentMode === 'odometry' && recordedPoints.length > 0) {
+                recordedPoints.forEach(point => {
+                    // Draw point (white outer, navy inner)
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#000080';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Label with rotated coordinate
+                    drawTextWithOutline(`(${point.odoX.toFixed(1)}, ${point.odoY.toFixed(1)})`, point.x, point.y - 16, 14, '#000080');
+                });
+            }
+
+            // Draw all saved lines
+            lines.forEach(line => {
+                drawLineWithInfo(line, false);
+            });
+
+            // Draw current line being created
+            if (startPoint && isMouseOver) {
+                // Apply snapping to both start and end points in odometry mode
+                let snappedStart = startPoint;
+                let snappedPreview = mousePos;
+                let isStartSnapped = false;
+                let isEndSnapped = false;
+
+                if (currentMode === 'odometry' && odometryOrigin && !isAngleIndicatorActive) {
+                    // Snap the start point for preview
+                    snappedStart = snapToAxis(startPoint.x, startPoint.y, odometryOrigin.x, odometryOrigin.y);
+                    if (snappedStart.x !== startPoint.x || snappedStart.y !== startPoint.y) {
+                        isStartSnapped = true;
+                    }
+
+                    // Snap the preview/end point
+                    snappedPreview = snapToAxis(mousePos.x, mousePos.y, odometryOrigin.x, odometryOrigin.y);
+                    if (snappedPreview.x !== mousePos.x || snappedPreview.y !== mousePos.y) {
+                        isEndSnapped = true;
+                    }
+                }
+
+                const dx = snappedPreview.x - snappedStart.x;
+                const dy = snappedPreview.y - snappedStart.y;
+                const dist = calculateDistance(snappedStart, snappedPreview);
+                let angle = Math.abs(calculateAngle(snappedStart, snappedPreview));
+                // Always show reference angle (smallest angle, < 90)
+                if (angle > 90) {
+                    angle = 180 - angle;
+                }
+                const rotations = dist / (wheelDiameter * Math.PI);
+                const wheelDeg = rotations * 360;
+
+                // Draw triangle preview
+                if (showTriangle) {
+                    const hPoint = { x: snappedPreview.x, y: snappedStart.y };
+                    const vPoint = { x: snappedStart.x, y: snappedPreview.y };
+
+                    // Triangle legs with outline
+                    drawLineWithOutline(snappedStart.x, snappedStart.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+                    drawLineWithOutline(snappedStart.x, snappedStart.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+
+                    // Leg distances
+                    if (showLegs) {
+                        // Leg distances with red text and white outline
+                        const hDist = Math.abs(toMM(dx));
+                        drawTextWithOutline(Math.round(hDist) + 'mm', (snappedStart.x + hPoint.x) / 2, snappedStart.y - 12, 14, '#ff0000');
+
+                        ctx.save();
+                        ctx.translate(snappedStart.x - 22, (snappedStart.y + vPoint.y) / 2);
+                        ctx.rotate(-Math.PI / 2);
+                        const vDist = Math.abs(toMM(dy));
+                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                        ctx.restore();
+                    }
+                }
+
+                // Draw angle arc preview
+                if (showAngle) {
+                    drawAngleText(snappedStart, snappedPreview);
+                }
+
+                // Draw preview line with white outline (navy color when snapped)
+                const lineColor = (isStartSnapped || isEndSnapped) ? '#000080' : COLORS.line;
+                drawLineWithOutline(snappedStart.x, snappedStart.y, snappedPreview.x, snappedPreview.y, lineColor, 5, 9);
+
+                // Draw snapped indicator circle
+                if (isEndSnapped) {
+                    ctx.strokeStyle = '#000080';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(snappedPreview.x, snappedPreview.y, 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Preview distance (red with white outline)
+                if (showDistance) {
+                    const midX = (snappedStart.x + snappedPreview.x) / 2;
+                    const midY = (snappedStart.y + snappedPreview.y) / 2;
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, '#ff0000');
+                }
+
+                // Preview wheel degrees (red with white outline)
+                if (showWheelDeg) {
+                    const midX = (snappedStart.x + snappedPreview.x) / 2;
+                    const midY = (snappedStart.y + snappedPreview.y) / 2;
+                    drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, '#ff0000');
+                }
+
+                // Draw start point (show snapped position if snapped)
+                const drawStart = isStartSnapped ? snappedStart : startPoint;
+                drawPoint(drawStart, COLORS.startPoint, 7, 5);
+            }
+
+            // Draw saved edge lines
+            edgeLines.forEach(el => {
+                let x1, y1, x2, y2;
+                if (el.edge === 'top')    { x1 = el.px; y1 = 0;            x2 = el.px; y2 = el.py; }
+                if (el.edge === 'bottom') { x1 = el.px; y1 = canvasHeight; x2 = el.px; y2 = el.py; }
+                if (el.edge === 'left')   { x1 = 0;     y1 = el.py;        x2 = el.px; y2 = el.py; }
+                if (el.edge === 'right')  { x1 = canvasWidth; y1 = el.py;  x2 = el.px; y2 = el.py; }
+                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                // Tick marks at edge
+                const tickLen = 8;
+                if (el.edge === 'top' || el.edge === 'bottom') {
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                } else {
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                }
+                // Label inside canvas
+                let lx, ly;
+                if (el.edge === 'top')    { lx = el.px + 22; ly = Math.max(el.py / 2, 14); }
+                if (el.edge === 'bottom') { lx = el.px + 22; ly = Math.min((canvasHeight + el.py) / 2, canvasHeight - 14); }
+                if (el.edge === 'left')   { lx = Math.max(el.px / 2, 30); ly = el.py - 14; }
+                if (el.edge === 'right')  { lx = Math.min((canvasWidth + el.px) / 2, canvasWidth - 30); ly = el.py - 14; }
+                drawTextWithOutline(Math.round(el.distMM) + 'mm', lx, ly, 13, '#00ccff');
+            });
+
+            // Draw edge measure preview
+            if (edgeMeasureMode && isMouseOver) {
+                let x1, y1, x2, y2, distMM;
+                if (edgeMeasureMode === 'top')    { x1 = mousePos.x; y1 = 0;            x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(mousePos.y); }
+                if (edgeMeasureMode === 'bottom') { x1 = mousePos.x; y1 = canvasHeight; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasHeight - mousePos.y); }
+                if (edgeMeasureMode === 'left')   { x1 = 0;     y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(mousePos.x); }
+                if (edgeMeasureMode === 'right')  { x1 = canvasWidth; y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasWidth - mousePos.x); }
+                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                const tickLen = 8;
+                if (edgeMeasureMode === 'top' || edgeMeasureMode === 'bottom') {
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                } else {
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                }
+                let lx, ly;
+                if (edgeMeasureMode === 'top')    { lx = mousePos.x + 22; ly = Math.max(mousePos.y / 2, 14); }
+                if (edgeMeasureMode === 'bottom') { lx = mousePos.x + 22; ly = Math.min((canvasHeight + mousePos.y) / 2, canvasHeight - 14); }
+                if (edgeMeasureMode === 'left')   { lx = Math.max(mousePos.x / 2, 30); ly = mousePos.y - 14; }
+                if (edgeMeasureMode === 'right')  { lx = Math.min((canvasWidth + mousePos.x) / 2, canvasWidth - 30); ly = mousePos.y - 14; }
+                drawTextWithOutline(Math.round(distMM) + 'mm', lx, ly, 13, '#00ccff');
+            }
+
+            // Draw robot cursor
+            if (isMouseOver) {
+                drawRobotCursor(mousePos.x, mousePos.y);
+
+                // Draw odometry coordinates if enabled and origin is set
+                if (currentMode === 'odometry' && odometryOrigin && !isAngleIndicatorActive) {
+                    const coords = calculateRotatedCoordinates(mousePos.x, mousePos.y);
+                    drawTextWithOutline(`X: ${coords.odoX.toFixed(0)}mm`, mousePos.x, mousePos.y - 20, 12, '#4dd0e1');
+                    drawTextWithOutline(`Y: ${coords.odoY.toFixed(0)}mm`, mousePos.x, mousePos.y - 35, 12, '#4dd0e1');
+                }
+            }
+
+            // Draw saved routes ONLY when a route is loaded
+            if (loadedRouteIndex !== null) {
+                const routesToDraw = getSavedRoutes();
+                const route = routesToDraw[loadedRouteIndex];
+                if (route) {
+                    // Draw route origin crosshair
+                    ctx.strokeStyle = '#ff9900';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(route.origin.x, 0);
+                    ctx.lineTo(route.origin.x, canvasHeight);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, route.origin.y);
+                    ctx.lineTo(canvasWidth, route.origin.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Draw route points
+                    route.points.forEach(point => {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = '#ff9900';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    // Draw route lines with triangle
+                    route.lines.forEach(routeLine => {
+                        if (showTriangle) {
+                            const hPoint = { x: routeLine.end.x, y: routeLine.start.y };
+                            const vPoint = { x: routeLine.start.x, y: routeLine.end.y };
+
+                            drawLineWithOutline(routeLine.start.x, routeLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 3, 6);
+                            drawLineWithOutline(routeLine.start.x, routeLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 3, 6);
+                        }
+
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, '#ff9900', 3, 6);
+                    });
+                }
+            }
+
+            // Draw current route being planned
+            if (routeOrigin) {
+                // Draw origin point - white outer, black inner
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(routeOrigin.x, routeOrigin.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(routeOrigin.x, routeOrigin.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label "origin" above (white outline, black text)
+                drawTextWithOutline('origin', routeOrigin.x, routeOrigin.y - 20, 12, '#000000');
+
+                // Label coordinate "(x, y)" below (white outline, black text)
+                const originOdoX = toMM(routeOrigin.x - routeOrigin.x);
+                const originOdoY = toMM(routeOrigin.y - routeOrigin.y);
+                drawTextWithOutline(`(${originOdoX.toFixed(0)}, ${originOdoY.toFixed(0)})`, routeOrigin.x, routeOrigin.y + 28, 12, '#000000');
+
+                // Draw ALL route lines (including pending)
+                // First draw confirmed lines
+                routeLines.forEach(routeLine => {
+                    if (showTriangle) {
+                        const hPoint = { x: routeLine.end.x, y: routeLine.start.y };
+                        const vPoint = { x: routeLine.start.x, y: routeLine.end.y };
+
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+                    }
+
+                    drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, COLORS.line, 3, 6);
+
+                    // Draw distance label
+                    const dist = calculateDistance(routeLine.start, routeLine.end);
+                    const midX = (routeLine.start.x + routeLine.end.x) / 2;
+                    const midY = (routeLine.start.y + routeLine.end.y) / 2;
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
+                });
+
+                // Draw route points (after origin) - all black with coordinate above, label below
+                routePoints.forEach((point, idx) => {
+                    if (idx === 0) return; // Skip origin point
+
+                    // Draw point - white outer, black inner
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Hover highlight
+                    if (hoveredNodeIndex === idx) {
+                        ctx.strokeStyle = '#4dd0e1';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 12, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    // Label coordinate above (white outline, black text)
+                    const odoX = toMM(point.x - routeOrigin.x);
+                    const odoY = toMM(routeOrigin.y - point.y);
+                    drawTextWithOutline(`(${odoX.toFixed(0)}, ${odoY.toFixed(0)})`, point.x, point.y - 16, 12, '#000000');
+
+                    // Label point number below (white outline, black text)
+                    drawTextWithOutline(`P${idx}`, point.x, point.y + 18, 10, '#000000');
+                });
+
+                // Then draw pending line
+                if (routePendingLine) {
+                    if (showTriangle) {
+                        const hPoint = { x: routePendingLine.end.x, y: routePendingLine.start.y };
+                        const vPoint = { x: routePendingLine.start.x, y: routePendingLine.end.y };
+
+                        drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, hPoint.x, hPoint.y, COLORS.triangleLegs, 4, 7);
+                        drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 4, 7);
+                    }
+
+                    drawLineWithOutline(routePendingLine.start.x, routePendingLine.start.y, routePendingLine.end.x, routePendingLine.end.y, COLORS.line, 3, 6);
+
+                    // Draw distance label for pending line
+                    const dist = calculateDistance(routePendingLine.start, routePendingLine.end);
+                    const midX = (routePendingLine.start.x + routePendingLine.end.x) / 2;
+                    const midY = (routePendingLine.start.y + routePendingLine.end.y) / 2;
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
+                }
+            }
+        }
+
+        function drawPoint(point, color, outer = 5, inner = 3) {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, outer, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, inner, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawRobotCursor(x, y) {
+            const halfW = toCanvas(ROBOT_SIZE.width) / 2;
+            const halfH = toCanvas(ROBOT_SIZE.height) / 2;
+
+            // Reverse both X and Y to match customization panel
+            // In customization: front is up (negative Y in canvas)
+            const offsetX = toCanvas(-ROBOT_CENTER_OFFSET.x);
+            const offsetY = toCanvas(-ROBOT_CENTER_OFFSET.y);
+
+            // Draw robot centered around user-defined center
+            const robotLeft = x - halfW + offsetX;
+            const robotTop = y - halfH + offsetY;
+
+            // Draw see-through box with white outline
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
+
+            ctx.strokeStyle = COLORS.robot;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
+
+            // Draw directional indicator (front arrow) - pointing up (negative Y)
+            ctx.fillStyle = '#ffff99';
+            ctx.beginPath();
+            const arrowSize = 10;
+            ctx.moveTo(x, robotTop - arrowSize);
+            ctx.lineTo(x - arrowSize/2, robotTop);
+            ctx.lineTo(x + arrowSize/2, robotTop);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw center point at mouse position
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = COLORS.crosshair;
+            ctx.lineWidth = 1;
+
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvasWidth, y);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasHeight);
+            ctx.stroke();
+        }
+
+
+        function calculateDistance(p1, p2) {
+            const dx = toMM(p2.x - p1.x);
+            const dy = toMM(p2.y - p1.y);
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function calculateAngle(p1, p2) {
+            const dx = toMM(p2.x - p1.x);
+            const dy = toMM(p2.y - p1.y);
+            return Math.atan2(dy, dx) * 180 / Math.PI;
+        }
+
+        function updateMeasurements(start, end) {
+            const dist = calculateDistance(start, end);
+            let angle = Math.abs(calculateAngle(start, end));
+            // Always show reference angle (smallest angle, < 90)
+            if (angle > 90) {
+                angle = 180 - angle;
+            }
+            const rotations = dist / (wheelDiameter * Math.PI);
+            const degrees = rotations * 360;
+            const dx = toMM(end.x - start.x);
+            const dy = toMM(end.y - start.y);
+
+            document.getElementById('dist-value').textContent = dist.toFixed(1) + ' mm';
+            document.getElementById('angle-value').textContent = angle.toFixed(1) + ' °';
+            document.getElementById('rotations-value').textContent = rotations.toFixed(2);
+            document.getElementById('degrees-value').textContent = degrees.toFixed(1) + ' °';
+            document.getElementById('h-value').textContent = Math.abs(dx).toFixed(1) + ' mm';
+            document.getElementById('v-value').textContent = Math.abs(dy).toFixed(1) + ' mm';
+        }
+
+        // Auto-load field image based on year and category
+        function getFieldImageUrl(year, category) {
+            return `GameField/${year}/${category}.png`;
+        }
+
+        function loadFieldImage(url) {
+            const loadingEl = document.getElementById('loading');
+            loadingEl.classList.remove('hidden');
+
+            if (fieldImg) {
+                fieldImg = null;
+            }
+
+            fieldImg = new Image();
+            fieldImg.src = url;
+
+            fieldImg.onload = function() {
+                console.log('Image loaded successfully');
+                loadingEl.classList.add('hidden');
+                draw();
+            };
+
+            fieldImg.onerror = function() {
+                console.log('Failed to load image, using grid only');
+                fieldImg = null;
+                loadingEl.classList.add('hidden');
+                draw();
+            };
+        }
+
+        // Year/Category change handlers
+        document.getElementById('year-select').addEventListener('change', () => {
+            const year = document.getElementById('year-select').value;
+            const category = document.getElementById('category-select').value;
+            loadFieldImage(getFieldImageUrl(year, category));
+        });
+
+        document.getElementById('category-select').addEventListener('change', () => {
+            const year = document.getElementById('year-select').value;
+            const category = document.getElementById('category-select').value;
+            loadFieldImage(getFieldImageUrl(year, category));
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            draw();
+        });
+
+        // Load initial field (2026 Elementary)
+        window.addEventListener('load', () => {
+            initCanvas();
+            const year = document.getElementById('year-select').value;
+            const category = document.getElementById('category-select').value;
+            loadFieldImage(getFieldImageUrl(year, category));
+            updateSavedRoutesList();
+            updateSavedLinesList();
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mousePos.x = e.clientX - rect.left;
+            mousePos.y = e.clientY - rect.top;
+            isMouseOver = true;
+
+            if (startPoint && !endPoint) {
+                updateMeasurements(startPoint, mousePos);
+            }
+
+            // Node Interaction logic (Route Mode)
+            if (currentMode === 'route' && routePoints.length > 0) {
+                // Check for hover
+                hoveredNodeIndex = null;
+                routePoints.forEach((point, idx) => {
+                    const dist = Math.sqrt(Math.pow(mousePos.x - point.x, 2) + Math.pow(mousePos.y - point.y, 2));
+                    if (dist < 10) {
+                        hoveredNodeIndex = idx;
+                    }
+                });
+
+                // Handle dragging - ONLY update point position, NO lines, NO connections
+                if (draggedNodeIndex !== null) {
+                    // Just move the point - nothing else changes
+                    routePoints[draggedNodeIndex].x = mousePos.x;
+                    routePoints[draggedNodeIndex].y = mousePos.y;
+
+                    // If dragging the origin (index 0), also update routeOrigin
+                    if (draggedNodeIndex === 0 && routeOrigin) {
+                        routeOrigin.x = mousePos.x;
+                        routeOrigin.y = mousePos.y;
+                    }
+                    // NO line changes, NO connection changes
+                }
+            }
+
+            // Update odometry display in sidebar
+            if (currentMode === 'odometry' && odometryOrigin) {
+                if (isAngleIndicatorActive) {
+                    // Show the angle that will be set on click
+                    const dx = mousePos.x - odometryOrigin.x;
+                    const dy = mousePos.y - odometryOrigin.y;
+                    let angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+                    if (angleDeg > 180) angleDeg -= 360;
+                    if (angleDeg < -180) angleDeg += 360;
+                    document.getElementById('odo-x').textContent = '-- mm';
+                    document.getElementById('odo-y').textContent = '-- mm';
+                    document.getElementById('odo-angle').textContent = angleDeg.toFixed(1) + ' °';
+                } else {
+                    // Use rotated coordinates
+                    const coords = calculateRotatedCoordinates(mousePos.x, mousePos.y);
+                    document.getElementById('odo-x').textContent = coords.odoX.toFixed(1) + ' mm';
+                    document.getElementById('odo-y').textContent = coords.odoY.toFixed(1) + ' mm';
+                    document.getElementById('odo-angle').textContent = odometryOriginAngle.toFixed(1) + ' °';
+                }
+            }
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isMouseOver = false;
+            // In route mode, if there's a pending line, finalize it
+            if (currentMode === 'route' && routePendingLine) {
+                routeLines.push(routePendingLine);
+                routePendingLine = null;
+                document.getElementById('route-buttons').style.display = 'flex';
+            }
+            draggedNodeIndex = null;
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            draggedNodeIndex = null;
+            draw();
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentMode === 'route' && hoveredNodeIndex !== null) {
+                draggedNodeIndex = hoveredNodeIndex;
+            }
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Edge measure mode click
+            if (edgeMeasureMode) {
+                let distMM;
+                if (edgeMeasureMode === 'top')    distMM = toMM(y);
+                if (edgeMeasureMode === 'bottom') distMM = toMM(canvasHeight - y);
+                if (edgeMeasureMode === 'left')   distMM = toMM(x);
+                if (edgeMeasureMode === 'right')  distMM = toMM(canvasWidth - x);
+                edgeLines.push({ edge: edgeMeasureMode, px: x, py: y, distMM });
+                draw();
+                return;
+            }
+
+            // If odometry mode is on and origin not set, set the origin
+            if (currentMode === 'odometry' && !odometryOrigin) {
+                const snapped = getSnappedOrigin(x, y);
+                odometryOrigin = { x: snapped.x, y: snapped.y, snapped: snapped.snapped };
+                isAngleIndicatorActive = true;
+                odometryOriginAngle = 0; // Start at 0 (standard up)
+                document.getElementById('odometry-info').style.display = 'block';
+                draw();
+                return;
+            }
+
+            // If angle indicator is active, set the angle on click
+            if (currentMode === 'odometry' && isAngleIndicatorActive) {
+                // Calculate angle from origin to click position
+                // 0° = up (Y negative), 90° = right (X positive), 180° = down, -90° = left
+                const dx = x - odometryOrigin.x;
+                const dy = y - odometryOrigin.y;
+                let angleDeg = Math.atan2(dx, -dy) * 180 / Math.PI;
+
+                // Constrain to -180 to 180 range
+                if (angleDeg > 180) angleDeg -= 360;
+                if (angleDeg < -180) angleDeg += 360;
+
+                // Snap to major angles: 0, 90, 180, -90
+                const snapThreshold = 10;
+                const majorAngles = [0, 90, 180, -90];
+                for (const targetAngle of majorAngles) {
+                    let diff = angleDeg - targetAngle;
+                    // Normalize difference to -180 to 180
+                    while (diff > 180) diff -= 360;
+                    while (diff < -180) diff += 360;
+                    if (Math.abs(diff) < snapThreshold) {
+                        angleDeg = targetAngle;
+                        break;
+                    }
+                }
+
+                odometryOriginAngle = angleDeg;
+                isAngleIndicatorActive = false;
+                draw();
+                return;
+            }
+
+            // If recording mode, record point (with snapping and rotated coordinates)
+            if (currentMode === 'odometry' && isRecording) {
+                const snapped = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                const coords = calculateRotatedCoordinates(snapped.x, snapped.y);
+                recordedPoints.push({ x: snapped.x, y: snapped.y, odoX: coords.odoX, odoY: coords.odoY });
+                draw();
+                return;
+            }
+
+            // If adding odometry point (with snapping and rotated coordinates)
+            if (currentMode === 'odometry' && odometryAddMode === 'point') {
+                const snapped = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                const coords = calculateRotatedCoordinates(snapped.x, snapped.y);
+                odometryPoints.push({ x: snapped.x, y: snapped.y, odoX: coords.odoX, odoY: coords.odoY });
+                draw();
+                return;
+            }
+
+            // If adding odometry line (with snapping and rotated coordinates)
+            if (currentMode === 'odometry' && odometryAddMode === 'line') {
+                if (!startPoint) {
+                    const snapped = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                    startPoint = { x: snapped.x, y: snapped.y };
+                } else {
+                    const snapped = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                    endPoint = { x: snapped.x, y: snapped.y };
+                    const coords = calculateRotatedCoordinates(snapped.x, snapped.y);
+                    const dist = Math.sqrt(Math.pow(toMM(endPoint.x - startPoint.x), 2) + Math.pow(toMM(endPoint.y - startPoint.y), 2));
+                    odometryLines.push({
+                        start: { ...startPoint },
+                        end: { ...endPoint },
+                        dist: dist,
+                        angle: odometryOriginAngle
+                    });
+                    startPoint = null;
+                    endPoint = null;
+                }
+                draw();
+                return;
+            }
+
+            // Route mode handling
+            if (currentMode === 'route') {
+                // If clicking on existing node - don't add new point, just return
+                if (hoveredNodeIndex !== null) {
+                    return;
+                }
+
+                // If route origin not set, set it
+                if (!routeOrigin) {
+                    routeOrigin = { x, y };
+                    routeIsPlanning = true;
+                    routePoints.push({ x, y });
+                    // lastNodeIndex handled by getLastNodeIndex()
+                    document.getElementById('route-info').style.display = 'block';
+                    document.getElementById('route-point-count').textContent = routePoints.length;
+                    document.getElementById('route-buttons').style.display = 'none';
+                    draw();
+                    return;
+                }
+
+                // If we have a pending line, finalize it first then add new point
+                if (routePendingLine) {
+                    // Push pending line to routeLines to make it permanent
+                    routeLines.push(routePendingLine);
+                }
+
+                // Start a new line from actual last node (not recently dragged node)
+                const lastPoint = routePoints[getLastNodeIndex()];
+                // Add new point to routePoints first
+                routePoints.push({ x, y });
+                const newPoint = routePoints[routePoints.length - 1];
+                // Create line with references
+                routePendingLine = {
+                    start: lastPoint,    // Reference
+                    end: newPoint        // Reference
+                };
+                // lastNodeIndex handled by getLastNodeIndex()
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'flex';
+                draw();
+                return;
+            }
+
+            if (!startPoint) {
+                let startPos = { x, y };
+                // Apply snapping to axes if in odometry mode with origin set
+                if (currentMode === 'odometry' && odometryOrigin && !isAngleIndicatorActive) {
+                    startPos = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                }
+                startPoint = startPos;
+                endPoint = null;
+            } else if (!endPoint) {
+                let endPos = { x, y };
+                // Apply snapping to axes if in odometry mode with origin set
+                if (currentMode === 'odometry' && odometryOrigin && !isAngleIndicatorActive) {
+                    endPos = snapToAxis(x, y, odometryOrigin.x, odometryOrigin.y);
+                }
+                endPoint = endPos;
+                lines.push({
+                    start: { ...startPoint },
+                    end: { ...endPoint }
+                });
+                updateMeasurements(startPoint, endPoint);
+                startPoint = null;
+                endPoint = null;
+            } else {
+                startPoint = { x, y };
+                endPoint = null;
+            }
+
+            draw();
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            // Deselect edge measure mode on right click
+            if (edgeMeasureMode) {
+                document.getElementById(`edge-btn-${edgeMeasureMode}`).classList.remove('active');
+                edgeMeasureMode = null;
+                draw();
+                return;
+            }
+            startPoint = null;
+            endPoint = null;
+            if (currentMode === 'route') {
+                // If we clicked on an existing point, remove it
+                if (hoveredNodeIndex !== null) {
+                    const indexToRemove = hoveredNodeIndex;
+
+                    // Remove the point
+                    routePoints.splice(indexToRemove, 1);
+
+                    // Rebuild lines between consecutive points (except for pending line)
+                    routeLines = [];
+                    for (let i = 0; i < routePoints.length - 1; i++) {
+                        routeLines.push({
+                            start: routePoints[i],
+                            end: routePoints[i + 1]
+                        });
+                    }
+
+                    // If we removed the origin (first point), the new first point becomes origin
+                    if (indexToRemove === 0 && routePoints.length > 0) {
+                        routeOrigin = { ...routePoints[0] };
+                    } else if (routePoints.length === 0) {
+                        // No points left
+                        routeOrigin = null;
+                    }
+
+                    // Clear pending line since the route structure changed
+                    routePendingLine = null;
+
+                    // Update UI
+                    document.getElementById('route-point-count').textContent = routePoints.length;
+                    if (routePoints.length === 0) {
+                        document.getElementById('route-buttons').style.display = 'none';
+                    } else {
+                        document.getElementById('route-buttons').style.display = 'flex';
+                    }
+                } else {
+                    // Didn't click on a point, clear everything (original behavior)
+                    routeOrigin = null;
+                    routePoints = [];
+                    routeLines = [];
+                    routePendingLine = null;
+                    savedLastNodeIndex = null;
+                    document.getElementById('route-buttons').style.display = 'none';
+                    document.getElementById('route-point-count').textContent = '0';
+                }
+            }
+            draw();
+        });
+
+        // Button handlers
+        document.getElementById('btn-new-line').addEventListener('click', () => {
+            startPoint = null;
+            endPoint = null;
+            draw();
+        });
+
+        document.getElementById('btn-delete').addEventListener('click', () => {
+            // In route mode, delete last point and line
+            if (currentMode === 'route' && routePoints.length > 0) {
+                // Remove the last point
+                routePoints.pop();
+                // Remove the last line if exists
+                if (routeLines.length > 0) {
+                    routeLines.pop();
+                }
+                // Clear pending line since we added points to it
+                routePendingLine = null;
+                // Update UI
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                if (routePoints.length === 0) {
+                    routeOrigin = null;
+                    document.getElementById('route-buttons').style.display = 'none';
+                }
+            } else if (lines.length > 0) {
+                lines.pop();
+            }
+            draw();
+        });
+
+        // Edge measure button handlers
+        ['top', 'bottom', 'left', 'right'].forEach(edge => {
+            document.getElementById(`edge-btn-${edge}`).addEventListener('click', () => {
+                if (edgeMeasureMode === edge) {
+                    edgeMeasureMode = null;
+                    document.getElementById(`edge-btn-${edge}`).classList.remove('active');
+                } else {
+                    if (edgeMeasureMode) document.getElementById(`edge-btn-${edgeMeasureMode}`).classList.remove('active');
+                    edgeMeasureMode = edge;
+                    document.getElementById(`edge-btn-${edge}`).classList.add('active');
+                    // Deselect active line drawing
+                    startPoint = null;
+                    endPoint = null;
+                }
+                draw();
+            });
+        });
+
+        document.getElementById('btn-clear-edge-lines').addEventListener('click', () => {
+            edgeLines = [];
+            draw();
+        });
+
+        document.getElementById('btn-clear-all').addEventListener('click', () => {
+            lines = [];
+            edgeLines = [];
+            startPoint = null;
+            endPoint = null;
+            // In odometry mode, clear points and lines but keep origin and angle
+            if (currentMode === 'odometry') {
+                odometryPoints = [];
+                odometryLines = [];
+                recordedPoints = [];
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+            }
+            // In route mode, clear all route data
+            if (currentMode === 'route') {
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                savedLastNodeIndex = null;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
+            }
+            draw();
+        });
+
+        // Mode toggle handlers
+        document.getElementById('mode-normal').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'normal';
+                odometryOrigin = null;
+                odometryOriginAngle = 0;
+                isAngleIndicatorActive = false;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                recordedPoints = [];
+                document.getElementById('odometry-info').style.display = 'none';
+                document.getElementById('route-info').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('btn-add-odometry-point').classList.remove('btn-active');
+                document.getElementById('btn-add-odometry-line').classList.remove('btn-active');
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+            }
+            draw();
+        });
+
+        document.getElementById('mode-odometry').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'odometry';
+                odometryOrigin = null;
+                odometryOriginAngle = 0;
+                odometryPoints = [];
+                odometryLines = [];
+                recordedPoints = [];
+                odometryAddMode = null;
+                isRecording = false;
+                isAngleIndicatorActive = false;
+                document.getElementById('route-info').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('odometry-info').style.display = 'block';
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+            }
+            draw();
+        });
+
+        document.getElementById('mode-route').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = 'route';
+                odometryOrigin = null;
+                odometryOriginAngle = 0;
+                odometryPoints = [];
+                odometryLines = [];
+                recordedPoints = [];
+                odometryAddMode = null;
+                isRecording = false;
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').disabled = true;
+                document.getElementById('record-output').style.display = 'none';
+                // Clear odometry info but show route info
+                document.getElementById('odometry-info').style.display = 'none';
+                document.getElementById('route-info').style.display = 'block';
+                // Always show saved routes section in route mode and update its contents
+                document.getElementById('saved-routes-section').style.display = 'block';
+                updateSavedRoutesList();
+                // Turn off right triangle in route mode
+                document.getElementById('show-triangle').checked = false;
+                showTriangle = false;
+            }
+            draw();
+        });
+
+        document.getElementById('show-triangle').addEventListener('change', (e) => {
+            showTriangle = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-grid').addEventListener('change', (e) => {
+            showGrid = e.target.checked;
+            draw();
+        });
+
+        // ---- Saved Lines ----
+        function getSavedLinesSets() {
+            return JSON.parse(localStorage.getItem('odommap_saved_lines')) || [];
+        }
+        function saveLinesSetsToStorage(sets) {
+            localStorage.setItem('odommap_saved_lines', JSON.stringify(sets));
+        }
+
+        function updateSavedLinesList() {
+            const list = document.getElementById('saved-lines-list');
+            const sets = getSavedLinesSets();
+            list.innerHTML = '';
+            if (sets.length === 0) {
+                list.innerHTML = '<div style="color:#666;text-align:center;padding:12px;font-size:0.8rem;">No saved lines</div>';
+                return;
+            }
+            sets.forEach((set, idx) => {
+                const realIdx = sets.length - 1 - idx;
+                const set_ = sets[realIdx];
+                const div = document.createElement('div');
+                div.style.cssText = 'padding:6px 8px;background:#0d1b2a;margin-bottom:4px;border-radius:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;';
+                div.innerHTML = `
+                    <div style="display:flex;flex-direction:column;">
+                        <span style="color:#4dd0e1;font-weight:bold;font-size:0.85rem;">${set_.name}</span>
+                        <span style="color:#666;font-size:0.7rem;">${set_.lines.length} lines, ${set_.edgeLines.length} edge lines</span>
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                        <button class="btn" style="padding:2px 7px;font-size:0.75rem;background:#4dd0e1;color:#000080;" onclick="loadLinesSet(${realIdx})">Load</button>
+                        <button class="btn btn-danger" style="padding:2px 7px;font-size:0.75rem;" onclick="deleteLinesSet(${realIdx})">X</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('btn-save-lines').addEventListener('click', () => {
+            if (lines.length === 0 && edgeLines.length === 0) return;
+            const now = new Date();
+            const name = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            // Store lines in mm (scale-independent)
+            const sets = getSavedLinesSets();
+            sets.push({
+                name,
+                timestamp: now.toISOString(),
+                lines: lines.map(l => ({
+                    start: { xMM: toMM(l.start.x), yMM: toMM(l.start.y) },
+                    end:   { xMM: toMM(l.end.x),   yMM: toMM(l.end.y)   }
+                })),
+                edgeLines: edgeLines.map(el => ({ ...el, pxMM: toMM(el.px), pyMM: toMM(el.py) }))
+            });
+            saveLinesSetsToStorage(sets);
+            updateSavedLinesList();
+        });
+
+        window.loadLinesSet = function(idx) {
+            const sets = getSavedLinesSets();
+            const set = sets[idx];
+            if (!set) return;
+            lines = set.lines.map(l => ({
+                start: { x: toCanvas(l.start.xMM), y: toCanvas(l.start.yMM) },
+                end:   { x: toCanvas(l.end.xMM),   y: toCanvas(l.end.yMM)   }
+            }));
+            edgeLines = set.edgeLines.map(el => ({
+                edge: el.edge,
+                px: toCanvas(el.pxMM),
+                py: toCanvas(el.pyMM),
+                distMM: el.distMM
+            }));
+            draw();
+        };
+
+        window.deleteLinesSet = function(idx) {
+            const sets = getSavedLinesSets();
+            sets.splice(idx, 1);
+            saveLinesSetsToStorage(sets);
+            updateSavedLinesList();
+        };
+
+        document.getElementById('btn-delete-all-lines').addEventListener('click', () => {
+            localStorage.removeItem('odommap_saved_lines');
+            updateSavedLinesList();
+        });
+
+        document.getElementById('grid-opacity-slider').addEventListener('input', (e) => {
+            gridOpacity = e.target.value / 100;
+            document.getElementById('grid-opacity-value').textContent = Math.round(gridOpacity * 100) + '%';
+            draw();
+        });
+
+        document.getElementById('btn-add-odometry-point').addEventListener('click', () => {
+            // Toggle - if already in point mode, turn off
+            if (odometryAddMode === 'point') {
+                odometryAddMode = null;
+                document.getElementById('btn-add-odometry-point').classList.remove('btn-active');
+            } else {
+                odometryAddMode = 'point';
+                document.getElementById('btn-add-odometry-point').classList.add('btn-active');
+                document.getElementById('btn-add-odometry-line').classList.remove('btn-active');
+            }
+        });
+
+        document.getElementById('btn-add-odometry-line').addEventListener('click', () => {
+            // Toggle - if already in line mode, turn off
+            if (odometryAddMode === 'line') {
+                odometryAddMode = null;
+                startPoint = null;
+                endPoint = null;
+                document.getElementById('btn-add-odometry-line').classList.remove('btn-active');
+            } else {
+                odometryAddMode = 'line';
+                startPoint = null;
+                endPoint = null;
+                document.getElementById('btn-add-odometry-line').classList.add('btn-active');
+                document.getElementById('btn-add-odometry-point').classList.remove('btn-active');
+            }
+        });
+
+        // Robot size customizer - opens modal
+        const toggleBtn = document.getElementById('btn-toggle-robot-size');
+
+        // Button opens the modal
+        toggleBtn.addEventListener('click', () => {
+            openRobotModal();
+        });
+
+        // ================================================
+        // ROBOT CUSTOMIZATION MODAL
+        // ================================================
+
+        // Robot dimensions state (from center to each side)
+        const ROBOT_DIMENSIONS = {
+            front: 125,  // mm from center to front
+            rear: 125,   // mm from center to rear
+            left: 125,   // mm from center to left
+            right: 125   // mm from center to right
+        };
+        const MAX_DIMENSION = 250;
+
+        // Robot center offset from geometric center (in mm)
+        // x: positive = center shifted right (more space on left)
+        // y: positive = center shifted down (more space on top/front)
+        let ROBOT_CENTER_OFFSET = { x: 0, y: 0 };
+
+        // Robot editor canvas
+        const robotEditorCanvas = document.getElementById('robot-editor-canvas');
+        const robotEditorCtx = robotEditorCanvas.getContext('2d');
+        const EDITOR_SIZE = 280;
+        const EDITOR_CENTER = EDITOR_SIZE / 2;
+        const PIXELS_PER_MM = (EDITOR_SIZE - 30) / (MAX_DIMENSION * 2);
+
+        let robotEditorDragging = null; // 'front', 'rear', 'left', 'right' or null
+        let isSymmetryMode = true;
+
+        // Initialize robot editor canvas size
+        robotEditorCanvas.width = EDITOR_SIZE;
+        robotEditorCanvas.height = EDITOR_SIZE;
+
+        // Load saved robot dimensions from localStorage
+        function loadRobotDimensions() {
+            const saved = localStorage.getItem('robot_dimensions');
+            if (saved) {
+                const dims = JSON.parse(saved);
+                ROBOT_DIMENSIONS.front = dims.front || 125;
+                ROBOT_DIMENSIONS.rear = dims.rear || 125;
+                ROBOT_DIMENSIONS.left = dims.left || 125;
+                ROBOT_DIMENSIONS.right = dims.right || 125;
+            }
+            // Also update the main ROBOT_SIZE
+            ROBOT_SIZE.width = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            ROBOT_SIZE.height = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+            // Calculate center offset from geometric center
+            calculateCenterOffset();
+        }
+
+        // Calculate center offset based on current dimensions
+        function calculateCenterOffset() {
+            // In customization panel: front is UP, left is LEFT
+            // Reverse both to match
+            ROBOT_CENTER_OFFSET.x = (ROBOT_DIMENSIONS.left - ROBOT_DIMENSIONS.right) / 2;
+            ROBOT_CENTER_OFFSET.y = (ROBOT_DIMENSIONS.rear - ROBOT_DIMENSIONS.front) / 2;
+        }
+
+        // Save robot dimensions to localStorage
+        function saveRobotDimensions() {
+            localStorage.setItem('robot_dimensions', JSON.stringify(ROBOT_DIMENSIONS));
+            // Also update the main ROBOT_SIZE
+            ROBOT_SIZE.width = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            ROBOT_SIZE.height = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+            // Calculate center offset from geometric center
+            calculateCenterOffset();
+        }
+
+        // Draw the robot in the editor
+        function drawRobotEditor() {
+            const ctx = robotEditorCtx;
+
+            // Clear canvas
+            ctx.fillStyle = '#0d1b2a';
+            ctx.fillRect(0, 0, EDITOR_SIZE, EDITOR_SIZE);
+
+            // Draw grid
+            ctx.strokeStyle = '#1b263b';
+            ctx.lineWidth = 1;
+            const gridStep = 25 * PIXELS_PER_MM;
+            for (let i = 0; i <= EDITOR_SIZE; i += gridStep) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, EDITOR_SIZE);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(EDITOR_SIZE, i);
+                ctx.stroke();
+            }
+
+            // Calculate pixel distances from center
+            const frontPx = ROBOT_DIMENSIONS.front * PIXELS_PER_MM;
+            const rearPx = ROBOT_DIMENSIONS.rear * PIXELS_PER_MM;
+            const leftPx = ROBOT_DIMENSIONS.left * PIXELS_PER_MM;
+            const rightPx = ROBOT_DIMENSIONS.right * PIXELS_PER_MM;
+
+            // Draw center point (origin)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw guide lines from center to each side
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+
+            // Front guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER, EDITOR_CENTER - frontPx);
+            ctx.stroke();
+
+            // Rear guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER, EDITOR_CENTER + rearPx);
+            ctx.stroke();
+
+            // Left guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER - leftPx, EDITOR_CENTER);
+            ctx.stroke();
+
+            // Right guide
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER);
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            // Draw robot outline
+            ctx.fillStyle = 'rgba(0, 0, 128, 0.3)';
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(EDITOR_CENTER - leftPx, EDITOR_CENTER - frontPx); // top-left
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER - frontPx);  // top-right
+            ctx.lineTo(EDITOR_CENTER + rightPx, EDITOR_CENTER + rearPx);   // bottom-right
+            ctx.lineTo(EDITOR_CENTER - leftPx, EDITOR_CENTER + rearPx);   // bottom-left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw directional indicator (front arrow)
+            ctx.fillStyle = '#ffff99';
+            ctx.beginPath();
+            const arrowSize = 10;
+            ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER - frontPx - arrowSize);
+            ctx.lineTo(EDITOR_CENTER - arrowSize/2, EDITOR_CENTER - frontPx);
+            ctx.lineTo(EDITOR_CENTER + arrowSize/2, EDITOR_CENTER - frontPx);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw labels
+            ctx.font = 'bold 10px Orbitron, monospace';
+            ctx.fillStyle = '#4dd0e1';
+            ctx.textAlign = 'center';
+            ctx.fillText('FRONT', EDITOR_CENTER, EDITOR_CENTER - frontPx - 18);
+            ctx.fillText('REAR', EDITOR_CENTER, EDITOR_CENTER + rearPx + 20);
+            ctx.fillText('LEFT', EDITOR_CENTER - leftPx - 25, EDITOR_CENTER + 4);
+            ctx.fillText('RIGHT', EDITOR_CENTER + rightPx + 25, EDITOR_CENTER + 4);
+
+            // Draw drag handles (circles at each edge)
+            const handleRadius = 8;
+
+            // Front handle
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#4dd0e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER - frontPx, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Rear handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER, EDITOR_CENTER + rearPx, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Left handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER - leftPx, EDITOR_CENTER, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Right handle
+            ctx.beginPath();
+            ctx.arc(EDITOR_CENTER + rightPx, EDITOR_CENTER, handleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw dimension values on the lines
+            ctx.font = 'bold 9px Orbitron, monospace';
+            ctx.fillStyle = '#ffff99';
+            ctx.fillText(ROBOT_DIMENSIONS.front + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER - frontPx/2);
+            ctx.fillText(ROBOT_DIMENSIONS.rear + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER + rearPx/2);
+            ctx.fillText(ROBOT_DIMENSIONS.left + 'mm', EDITOR_CENTER - leftPx/2, EDITOR_CENTER - 12);
+            ctx.fillText(ROBOT_DIMENSIONS.right + 'mm', EDITOR_CENTER + rightPx/2, EDITOR_CENTER - 12);
+        }
+
+        // Update inputs to match current dimensions
+        function updateDimensionInputs() {
+            document.getElementById('robot-front').value = ROBOT_DIMENSIONS.front;
+            document.getElementById('robot-rear').value = ROBOT_DIMENSIONS.rear;
+            document.getElementById('robot-left').value = ROBOT_DIMENSIONS.left;
+            document.getElementById('robot-right').value = ROBOT_DIMENSIONS.right;
+
+            const totalWidth = ROBOT_DIMENSIONS.left + ROBOT_DIMENSIONS.right;
+            const totalLength = ROBOT_DIMENSIONS.front + ROBOT_DIMENSIONS.rear;
+
+            document.getElementById('robot-total-width').value = totalWidth;
+            document.getElementById('robot-total-length').value = totalLength;
+            document.getElementById('display-width').textContent = totalWidth + ' mm';
+            document.getElementById('display-length').textContent = totalLength + ' mm';
+        }
+
+        // Handle drag start on robot editor canvas
+        function getHandleAtPosition(x, y) {
+            const frontPx = ROBOT_DIMENSIONS.front * PIXELS_PER_MM;
+            const rearPx = ROBOT_DIMENSIONS.rear * PIXELS_PER_MM;
+            const leftPx = ROBOT_DIMENSIONS.left * PIXELS_PER_MM;
+            const rightPx = ROBOT_DIMENSIONS.right * PIXELS_PER_MM;
+            const handleRadius = 15;
+
+            // Check front handle
+            if (Math.abs(x - EDITOR_CENTER) < handleRadius && Math.abs(y - (EDITOR_CENTER - frontPx)) < handleRadius) {
+                return 'front';
+            }
+            // Check rear handle
+            if (Math.abs(x - EDITOR_CENTER) < handleRadius && Math.abs(y - (EDITOR_CENTER + rearPx)) < handleRadius) {
+                return 'rear';
+            }
+            // Check left handle
+            if (Math.abs(x - (EDITOR_CENTER - leftPx)) < handleRadius && Math.abs(y - EDITOR_CENTER) < handleRadius) {
+                return 'left';
+            }
+            // Check right handle
+            if (Math.abs(x - (EDITOR_CENTER + rightPx)) < handleRadius && Math.abs(y - EDITOR_CENTER) < handleRadius) {
+                return 'right';
+            }
+            return null;
+        }
+
+        // Update dimension from drag position
+        function updateDimensionFromDrag(handle, x, y) {
+            let newValue;
+            if (handle === 'front') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((EDITOR_CENTER - y) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.front = newValue;
+            } else if (handle === 'rear') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((y - EDITOR_CENTER) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.rear = newValue;
+            } else if (handle === 'left') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((EDITOR_CENTER - x) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.left = newValue;
+            } else if (handle === 'right') {
+                newValue = Math.max(1, Math.min(MAX_DIMENSION, Math.round((x - EDITOR_CENTER) / PIXELS_PER_MM)));
+                ROBOT_DIMENSIONS.right = newValue;
+            }
+
+            // Apply symmetry if enabled
+            if (isSymmetryMode) {
+                if (handle === 'front' || handle === 'rear') {
+                    ROBOT_DIMENSIONS.front = newValue;
+                    ROBOT_DIMENSIONS.rear = newValue;
+                } else if (handle === 'left' || handle === 'right') {
+                    ROBOT_DIMENSIONS.left = newValue;
+                    ROBOT_DIMENSIONS.right = newValue;
+                }
+            }
+        }
+
+        // Robot editor canvas mouse events
+        robotEditorCanvas.addEventListener('mousedown', (e) => {
+            const rect = robotEditorCanvas.getBoundingClientRect();
+            const scaleX = robotEditorCanvas.width / rect.width;
+            const scaleY = robotEditorCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            robotEditorDragging = getHandleAtPosition(x, y);
+        });
+
+        robotEditorCanvas.addEventListener('mousemove', (e) => {
+            const rect = robotEditorCanvas.getBoundingClientRect();
+            const scaleX = robotEditorCanvas.width / rect.width;
+            const scaleY = robotEditorCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            if (robotEditorDragging) {
+                updateDimensionFromDrag(robotEditorDragging, x, y);
+                updateDimensionInputs();
+                drawRobotEditor();
+            } else {
+                // Change cursor if hovering over a handle
+                const handle = getHandleAtPosition(x, y);
+                robotEditorCanvas.style.cursor = handle ? 'grab' : 'default';
+            }
+        });
+
+        robotEditorCanvas.addEventListener('mouseup', () => {
+            robotEditorDragging = null;
+        });
+
+        robotEditorCanvas.addEventListener('mouseleave', () => {
+            robotEditorDragging = null;
+        });
+
+        // Dimension input handlers
+        const frontInput = document.getElementById('robot-front');
+        const rearInput = document.getElementById('robot-rear');
+        const leftInput = document.getElementById('robot-left');
+        const rightInput = document.getElementById('robot-right');
+
+        function handleDimensionInput(type, value) {
+            const val = Math.max(1, Math.min(MAX_DIMENSION, parseInt(value) || 1));
+
+            if (type === 'front' || type === 'rear') {
+                ROBOT_DIMENSIONS.front = val;
+                ROBOT_DIMENSIONS.rear = val;
+            } else if (type === 'left' || type === 'right') {
+                ROBOT_DIMENSIONS.left = val;
+                ROBOT_DIMENSIONS.right = val;
+            }
+
+            updateDimensionInputs();
+            drawRobotEditor();
+        }
+
+        frontInput.addEventListener('input', (e) => {
+            handleDimensionInput('front', e.target.value);
+        });
+
+        rearInput.addEventListener('input', (e) => {
+            handleDimensionInput('rear', e.target.value);
+        });
+
+        leftInput.addEventListener('input', (e) => {
+            handleDimensionInput('left', e.target.value);
+        });
+
+        rightInput.addEventListener('input', (e) => {
+            handleDimensionInput('right', e.target.value);
+        });
+
+        // Symmetry mode toggle
+        document.getElementById('symmetry-mode').addEventListener('change', (e) => {
+            isSymmetryMode = e.target.checked;
+        });
+
+        // Reset button
+        document.getElementById('btn-reset-robot').addEventListener('click', () => {
+            ROBOT_DIMENSIONS.front = 125;
+            ROBOT_DIMENSIONS.rear = 125;
+            ROBOT_DIMENSIONS.left = 125;
+            ROBOT_DIMENSIONS.right = 125;
+            updateDimensionInputs();
+            drawRobotEditor();
+        });
+
+        // Modal open/close functions
+        const robotModal = document.getElementById('robot-modal');
+        const modalOpenBtn = document.getElementById('btn-toggle-robot-size');
+
+        function openRobotModal() {
+            loadRobotDimensions();
+            updateDimensionInputs();
+            drawRobotEditor();
+            robotModal.classList.add('active');
+        }
+
+        function closeRobotModal() {
+            robotModal.classList.remove('active');
+        }
+
+        // Modal button handlers
+        modalOpenBtn.addEventListener('click', openRobotModal);
+        document.getElementById('robot-modal-close').addEventListener('click', closeRobotModal);
+
+        // Save and close button
+        document.getElementById('btn-save-robot').addEventListener('click', () => {
+            saveRobotDimensions();
+            document.querySelector('#robot-info div').textContent = `Size: ${ROBOT_SIZE.width} x ${ROBOT_SIZE.height} mm`;
+            draw();
+            closeRobotModal();
+        });
+
+        // Click outside modal to close
+        robotModal.addEventListener('click', (e) => {
+            if (e.target === robotModal) {
+                closeRobotModal();
+            }
+        });
+
+        // Load robot dimensions on page load
+        window.addEventListener('load', () => {
+            loadRobotDimensions();
+            updateDimensionInputs();
+            calculateCenterOffset(); // Ensure center offset is calculated on load
+        });
+
+        // ================================================
+        // ROUTE MODE IMPROVEMENT - Clear previous route
+        // ================================================
+
+        // Store the current loaded route preview path
+        let currentRoutePreview = null;
+
+        // Updated route loading function to clear previous routes
+        function clearPreviousRoutePreview() {
+            if (currentRoutePreview) {
+                // The previous route is cleared by setting loadedRouteIndex = null
+                // This is handled in loadRoute function
+            }
+            currentRoutePreview = null;
+        }
+
+        // Override the loadRoute function to clear previous
+        const originalLoadRoute = loadRoute;
+        loadRoute = function(index) {
+            // Clear previous route preview first
+            clearPreviousRoutePreview();
+
+            // Call original loadRoute
+            const routes = getSavedRoutes();
+            const route = routes[index];
+            if (route) {
+                loadedRouteIndex = index;
+                currentRoutePreview = route;
+
+                // Clear current route state and odometry state
+                odometryOrigin = null;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+
+                // Load the route data into current state
+                routeOrigin = { ...route.origin };
+                routePoints = route.points.map(p => ({ ...p }));
+                routeLines = route.lines.map(l => ({
+                    start: { ...l.start },
+                    end: { ...l.end }
+                }));
+
+                // Update UI
+                document.getElementById('route-info').style.display = 'block';
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'block';
+                document.getElementById('loaded-route-name').textContent = route.name;
+
+                // Switch to route mode if not already
+                document.getElementById('mode-route').checked = true;
+                currentMode = 'route';
+
+                // Hide odometry info and show route info
+                document.getElementById('odometry-info').style.display = 'none';
+
+                draw();
+            }
+        };
+
+        // Unload route function to clear preview
+        const originalUnloadRoute = unloadRoute;
+        unloadRoute = function() {
+            loadedRouteIndex = null;
+            currentRoutePreview = null;
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+
+            document.getElementById('route-loaded-info').style.display = 'none';
+            document.getElementById('saved-routes-section').style.display = 'block';
+            updateSavedRoutesList();
+            draw();
+        };
+
+        // Wheel diameter handler
+
+        document.getElementById('wheel-diameter').addEventListener('input', (e) => {
+            wheelDiameter = parseFloat(e.target.value) || 62.4;
+            // Update current measurement whenever wheel diameter changes and there's an active line
+            if (startPoint) {
+                updateMeasurements(startPoint, mousePos);
+                draw();
+            }
+        });
+
+        // Record button handler
+        document.getElementById('btn-record').addEventListener('click', () => {
+            isRecording = true;
+            recordedPoints = [];
+            // Clear points and lines but keep origin
+            odometryPoints = [];
+            odometryLines = [];
+            odometryAddMode = null;
+            startPoint = null;
+            endPoint = null;
+
+            // Disable other buttons
+            document.getElementById('btn-add-odometry-point').disabled = true;
+            document.getElementById('btn-add-odometry-line').disabled = true;
+            document.getElementById('btn-record').disabled = true;
+            document.getElementById('btn-stop').disabled = false;
+            document.getElementById('show-triangle').parentElement.style.opacity = '0.5';
+
+            // Hide output area
+            document.getElementById('record-output').style.display = 'none';
+
+            draw();
+        });
+
+        // Stop button handler
+        document.getElementById('btn-stop').addEventListener('click', () => {
+            isRecording = false;
+
+            // Re-enable other buttons
+            document.getElementById('btn-add-odometry-point').disabled = false;
+            document.getElementById('btn-add-odometry-line').disabled = false;
+            document.getElementById('btn-record').disabled = false;
+            document.getElementById('btn-stop').disabled = true;
+            document.getElementById('show-triangle').parentElement.style.opacity = '1';
+
+            // Generate Python list output
+            if (recordedPoints.length > 0) {
+                const pythonList = recordedPoints.map(p => `(${p.odoX.toFixed(1)}, ${p.odoY.toFixed(1)})`).join(', ');
+                const output = `[${pythonList}]`;
+                document.getElementById('python-output').value = output;
+                document.getElementById('record-output').style.display = 'block';
+            }
+
+            draw();
+        });
+
+        // Copy to clipboard handler
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            const output = document.getElementById('python-output').value;
+            if (output) {
+                navigator.clipboard.writeText(output).then(() => {
+                    const copyBtn = document.getElementById('btn-copy');
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy to Clipboard';
+                    }, 2000);
+                });
+            }
+        });
+
+        // Save route button handler
+        document.getElementById('btn-save-route').addEventListener('click', () => {
+            // Save current route (origin must exist)
+            if (routeOrigin && routePoints.length > 0) {
+                // If there's a pending line, add it to route lines
+                if (routePendingLine) {
+                    routeLines.push(routePendingLine);
+                }
+
+                // Auto-generate route name from date/time
+                const now = new Date();
+                const routeName = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+
+                // Save to localStorage with name and timestamp
+                const routes = getSavedRoutes();
+                routes.push({
+                    name: routeName,
+                    timestamp: now.toISOString(),
+                    origin: { ...routeOrigin },
+                    points: [...routePoints],
+                    lines: [...routeLines]
+                });
+                saveRoutesToStorage(routes);
+
+                // Update saved routes list UI
+                updateSavedRoutesList();
+
+                // Clear current route
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                savedLastNodeIndex = null;
+                routeIsPlanning = false;
+
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
+            }
+            draw();
+        });
+
+        // Cancel route button handler
+        document.getElementById('btn-cancel-route').addEventListener('click', () => {
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+            routeIsPlanning = false;
+
+            document.getElementById('route-buttons').style.display = 'none';
+            document.getElementById('route-point-count').textContent = '0';
+            draw();
+        });
+
+        // Update saved routes list UI
+        function getSavedRoutes() {
+            return JSON.parse(localStorage.getItem('rbrizz_saved_routes')) || [];
+        }
+
+        function saveRoutesToStorage(routes) {
+            localStorage.setItem('rbrizz_saved_routes', JSON.stringify(routes));
+        }
+
+        // Route loading state
+        let loadedRouteIndex = null;
+
+        function updateSavedRoutesList() {
+            const list = document.getElementById('saved-routes-list');
+            const section = document.getElementById('saved-routes-section');
+            const routes = getSavedRoutes();
+
+            // Only show section in route mode
+            if (currentMode !== 'route') {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+
+            list.innerHTML = '';
+
+            if (routes.length === 0) {
+                list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+                return;
+            }
+
+            routes.forEach((route, index) => {
+                const routeDiv = document.createElement('div');
+                routeDiv.style.cssText = 'padding: 8px; background: #0d1b2a; margin-bottom: 5px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
+
+                // Format timestamp to readable date/time
+                const date = new Date(route.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+
+                routeDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #ff9900; font-weight: bold;">${route.name}</span>
+                        <span style="color: #ffff66; font-size: 0.7rem;">${dateStr} ${timeStr}</span>
+                        <span style="color: #666; font-size: 0.7rem;">${route.points.length} points</span>
+                    </div>
+                    <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="deleteRoute(${index})">X</button>
+                `;
+                routeDiv.ondblclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        loadRoute(index);
+                    }
+                };
+                list.appendChild(routeDiv);
+            });
+        }
+
+        // Load saved route
+        function loadRoute(index) {
+            const routes = getSavedRoutes();
+            const route = routes[index];
+            if (route) {
+                // Set loaded route index
+                loadedRouteIndex = index;
+
+                // Clear current route state and odometry state
+                odometryOrigin = null;
+                odometryPoints = [];
+                odometryLines = [];
+                odometryAddMode = null;
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                savedLastNodeIndex = null;
+
+                // Load the route data into current state
+                routeOrigin = { ...route.origin };
+                routePoints = route.points.map(p => ({ ...p }));
+                routeLines = route.lines.map(l => ({
+                    start: { ...l.start },
+                    end: { ...l.end }
+                }));
+                // lastNodeIndex handled by getLastNodeIndex()
+
+                // Update UI
+                document.getElementById('route-info').style.display = 'block';
+                document.getElementById('route-point-count').textContent = routePoints.length;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('saved-routes-section').style.display = 'none';
+                document.getElementById('route-loaded-info').style.display = 'block';
+                document.getElementById('loaded-route-name').textContent = route.name;
+
+                // Switch to route mode if not already
+                document.getElementById('mode-route').checked = true;
+                currentMode = 'route';
+
+                // Hide odometry info and show route info
+                document.getElementById('odometry-info').style.display = 'none';
+
+                // Show the loaded route info section
+                draw();
+            }
+        }
+
+        // Delete saved route
+        function deleteRoute(index) {
+            const routes = getSavedRoutes();
+            routes.splice(index, 1);
+            saveRoutesToStorage(routes);
+            updateSavedRoutesList();
+            draw();
+        }
+
+        // Delete all saved routes
+        document.getElementById('btn-delete-all-routes').addEventListener('click', () => {
+            localStorage.removeItem('rbrizz_saved_routes');
+            // Clear the list but keep the section visible
+            const list = document.getElementById('saved-routes-list');
+            list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+            draw();
+        });
+
+        // Unload route button handler
+        document.getElementById('btn-unload-route').addEventListener('click', () => {
+            unloadRoute();
+            draw();
+        });
+
+        function unloadRoute() {
+            loadedRouteIndex = null;
+            routeOrigin = null;
+            routePoints = [];
+            routeLines = [];
+            routePendingLine = null;
+
+            document.getElementById('route-loaded-info').style.display = 'none';
+            document.getElementById('saved-routes-section').style.display = 'block';
+            updateSavedRoutesList();
+            draw();
+        }
+
+        // Make deleteRoute available globally
+        window.deleteRoute = deleteRoute;
+
+        // PWA Install prompt
+        let deferredPrompt;
+        const installBtn = document.getElementById('btn-install');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
