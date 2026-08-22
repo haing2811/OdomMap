@@ -1,36 +1,15 @@
-<<<<<<< HEAD
-const CACHE_NAME = 'odommap-v1';
-=======
 const CACHE_NAME = 'odommap-v3';
->>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
 const urlsToCache = [
     './',
     './OdomMap.html',
     './manifest.json'
 ];
 
-<<<<<<< HEAD
-=======
 // Install event - cache resources
->>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(urlsToCache))
-<<<<<<< HEAD
-    );
-});
-
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                if (response) return response;
-                return fetch(event.request);
-            })
-    );
-});
-=======
             .then(() => self.skipWaiting()) // Activate immediately
     );
 });
@@ -85,4 +64,3 @@ self.addEventListener('fetch', (event) => {
         );
     }
 });
->>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
