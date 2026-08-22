@@ -9,10 +9,24 @@
   "orientation": "any",
   "icons": [
     {
+<<<<<<< HEAD
       "src": "Logo/iconrb.png",
+=======
+      "src": "Logo/map.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "Logo/map.png",
+>>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ]
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24

@@ -2405,6 +2405,7 @@
             startPoint = null;
             endPoint = null;
             if (currentMode === 'route') {
+<<<<<<< HEAD
                 // If we clicked on an existing point, remove it
                 if (hoveredNodeIndex !== null) {
                     const indexToRemove = hoveredNodeIndex;
@@ -2449,6 +2450,15 @@
                     document.getElementById('route-buttons').style.display = 'none';
                     document.getElementById('route-point-count').textContent = '0';
                 }
+=======
+                routeOrigin = null;
+                routePoints = [];
+                routeLines = [];
+                routePendingLine = null;
+                savedLastNodeIndex = null;
+                document.getElementById('route-buttons').style.display = 'none';
+                document.getElementById('route-point-count').textContent = '0';
+>>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
             }
             draw();
         });
@@ -3538,4 +3548,8 @@
         }
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 776db71480c6f51bca0b9f98a2076e4a2fd8ba24
