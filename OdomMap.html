@@ -5,20 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OdomMap</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0F0C1F">
+    <meta name="theme-color" content="#14161C">
     <link rel="icon" type="image/png" href="Logo/map.png">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-void: #14161C;
+            --bg-field: #1B1E27;
+            --bg-grid: #262A36;
+            --accent-primary: #4FA3D1;
+            --accent-primary-hover: #6BB6DE;
+            --accent-secondary: #E0A458;
+            --accent-warn: #D9B25C;
+            --accent-danger: #D9636B;
+            --accent-line: #4FD1A5;
+            --accent-snap: #E8B65A;
+            --accent-structural: #7B87B8;
+            --text-primary: #F2F3F5;
+            --text-muted: #8A8F9C;
+            --navy: #000080;
+            --input-bg: #1E212B;
+            --border-default: #2E3340;
+            --measurement-line: #3FCBEB;
+            --route-primary: #E0A458;
+            --route-secondary: #E8D06B;
+            --font-header: 'Orbitron', sans-serif;
+            --font-ui: 'Inter', sans-serif;
+            --accent-cyan: #00ffff;
+        }
         * {
-            margin: 0;  
+            margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Orbitron', 'Courier New', Courier, monospace;
-            background: #0F0C1F;
-            color: white;
+            font-family: var(--font-ui);
+            background: var(--bg-void);
+            color: var(--text-primary);
             overflow: hidden;
             height: 100vh;
         }
@@ -44,8 +68,8 @@
         .spinner {
             width: 50px;
             height: 50px;
-            border: 5px solid #000080;
-            border-top: 5px solid #4dd0e1;
+            border: 5px solid var(--navy);
+            border-top: 5px solid var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -57,7 +81,7 @@
 
         #loading p {
             margin-top: 20px;
-            color: #4dd0e1;
+            color: var(--accent-primary);
         }
 
         #header {
@@ -65,8 +89,8 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 15px;
-            background: #0F0C1F;
-            border-bottom: 2px solid #1b263b;
+            background: var(--bg-void);
+            border-bottom: 2px solid var(--bg-grid);
             flex-wrap: wrap;
             gap: 10px;
             position: relative;
@@ -75,10 +99,11 @@
 
         #header h1 {
             font-size: 1.2rem;
-            color: #4dd0e1;
+            color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 10px;
+            font-family: var(--font-header);
         }
 
         #header h1 img {
@@ -94,20 +119,21 @@
         }
         .header-title {
             font-size: 1.2rem;
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-weight: bold;
+            font-family: var(--font-header);
         }
 
         .inspired-by {
             font-size: 1rem;
-            color: #ffffff;
+            color: var(--text-primary);
             vertical-align: middle;
             margin: 0 8px;
         }
 
         .header-title {
             font-size: 1.2rem;
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-weight: bold;
             white-space: nowrap;
         }
@@ -127,15 +153,15 @@
 
         label {
             font-size: 0.9rem;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         select, input[type="number"] {
             padding: 8px 12px;
             border-radius: 5px;
-            border: 1px solid #0f3460;
-            background: #1a1a2e;
-            color: white;
+            border: 1px solid var(--border-default);
+            background: var(--input-bg);
+            color: var(--text-primary);
             font-size: 0.9rem;
         }
 
@@ -159,35 +185,35 @@
         }
 
         #canvas {
-            border: 2px solid #0f3460;
+            border: 2px solid var(--border-default);
             cursor: crosshair;
         }
 
         #sidebar {
             width: 300px;
-            background: #0d1b2a;
+            background: var(--bg-field);
             padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            border-left: 2px solid #1b263b;
+            border-left: 2px solid var(--bg-grid);
             overflow-y: auto;
         }
 
         .sidebar-section {
-            background: #1b263b;
+            background: var(--bg-grid);
             padding: 12px;
             border-radius: 8px;
         }
 
         .sidebar-section h3 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             margin-bottom: 10px;
             font-size: 0.95rem;
         }
 
         .btn, .sidebar-section h3, label, select, input, .measurement-item {
-            font-family: 'Orbitron', 'Courier New', Courier, monospace;
+            font-family: var(--font-ui);
         }
 
         .btn {
@@ -202,47 +228,47 @@
         }
 
         .btn-primary {
-            background: #4dd0e1;
-            color: #000080;
+            background: var(--accent-primary);
+            color: var(--navy);
             font-weight: bold;
         }
 
         .btn-primary:hover {
-            background: #00bcd4;
+            background: var(--accent-primary);
         }
 
         .btn-secondary {
-            background: #ffff99;
-            color: #000080;
+            background: var(--accent-warn);
+            color: var(--navy);
             font-weight: bold;
         }
 
         .btn-secondary:hover {
-            background: #ffeb3b;
+            background: var(--accent-warn);
         }
 
         .btn-danger {
-            background: #000080;
-            color: #ffffff;
+            background: var(--navy);
+            color: var(--text-primary);
         }
 
         .btn-danger:hover {
-            background: #4dd0e1;
+            background: var(--accent-primary);
         }
 
         .btn-active {
-            background: #4dd0e1 !important;
-            border-color: #4dd0e1 !important;
+            background: var(--accent-primary) !important;
+            border-color: var(--accent-primary) !important;
         }
 
         #measurements {
-            background: #1b263b;
+            background: var(--bg-field);
             padding: 12px;
             border-radius: 8px;
         }
 
         #measurements h3 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             margin-bottom: 10px;
         }
 
@@ -250,7 +276,7 @@
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #0d1b2a;
+            border-bottom: 1px solid var(--border-default);
         }
 
         .measurement-item:last-child {
@@ -258,19 +284,19 @@
         }
 
         .measurement-value {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-weight: bold;
         }
 
         #robot-info {
             font-size: 0.85rem;
-            color: #ffffff;
+            color: var(--text-primary);
             line-height: 1.6;
         }
 
         .scale-info {
             font-size: 0.8rem;
-            color: #ffffff;
+            color: var(--text-primary);
             margin-top: 10px;
         }
 
@@ -290,7 +316,7 @@
         .toggle-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            accent-color: #4dd0e1;
+            accent-color: var(--accent-primary);
         }
 
         .toggle-item label {
@@ -317,19 +343,19 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #1b263b;
+            background: var(--bg-field);
             transition: background 0.3s;
         }
 
         .social-icon:hover {
-            background: #4dd0e1;
+            background: var(--accent-primary);
         }
 
         .hyperlink-box {
             display: block;
             padding: 10px 15px;
-            background: #000080;
-            color: #ffffff;
+            background: var(--navy);
+            color: var(--text-primary);
             text-align: center;
             border-radius: 5px;
             text-decoration: none;
@@ -338,8 +364,8 @@
         }
 
         .hyperlink-box:hover {
-            background: #4dd0e1;
-            color: #000080;
+            background: var(--accent-primary);
+            color: var(--navy);
         }
 
         #saved-routes-list::-webkit-scrollbar {
@@ -347,23 +373,23 @@
         }
 
         #saved-routes-list::-webkit-scrollbar-track {
-            background: #0d1b2a;
+            background: var(--bg-void);
             border-radius: 4px;
         }
 
         #saved-routes-list::-webkit-scrollbar-thumb {
-            background: #4dd0e1;
+            background: var(--accent-primary);
             border-radius: 4px;
         }
 
         #saved-routes-list::-webkit-scrollbar-thumb:hover {
-            background: #00bcd4;
+            background: var(--accent-primary);
         }
 
         /* Firefox scrollbar support */
         #saved-routes-list {
             scrollbar-width: thin;
-            scrollbar-color: #4dd0e1 #0d1b2a;
+            scrollbar-color: var(--accent-primary) var(--bg-void);
         }
 
         .edge-btn-group {
@@ -374,10 +400,10 @@
 
         .edge-btn {
             padding: 8px 6px;
-            border: 2px solid #0f3460;
+            border: 2px solid var(--border-default);
             border-radius: 5px;
-            background: #1a1a2e;
-            color: #4dd0e1;
+            background: var(--bg-field);
+            color: var(--accent-primary);
             font-family: 'Orbitron', 'Courier New', Courier, monospace;
             font-size: 0.8rem;
             font-weight: bold;
@@ -386,9 +412,9 @@
         }
 
         .edge-btn:hover, .edge-btn.active {
-            background: #4dd0e1;
-            color: #000080;
-            border-color: #4dd0e1;
+            background: var(--accent-primary);
+            color: var(--navy);
+            border-color: var(--accent-primary);
         }
 
         .edge-btn-top { grid-column: 1 / 3; }
@@ -398,11 +424,11 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: #1b263b;
-            color: white;
+            background: var(--bg-field);
+            color: var(--text-primary);
             padding: 15px;
             border-radius: 8px;
-            border: 2px solid #4dd0e1;
+            border: 2px solid var(--accent-primary);
             z-index: 1000;
             display: none;
             flex-direction: column;
@@ -412,7 +438,7 @@
             width: 250px;
         }
         #robot-size-customizer h3 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-size: 0.9rem;
             margin-bottom: 5px;
             display: flex;
@@ -437,7 +463,7 @@
         }
         #btn-close-customizer {
             cursor: pointer;
-            background: #ff4444;
+            background: var(--accent-danger);
             border: none;
             color: white;
             font-weight: bold;
@@ -447,9 +473,9 @@
         }
         #btn-toggle-robot-size {
             padding: 6px 12px;
-            background: #1a1a2e;
-            color: #4dd0e1;
-            border: 1px solid #4dd0e1;
+            background: var(--bg-field);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
             border-radius: 5px;
             font-weight: bold;
             font-size: 0.8rem;
@@ -458,8 +484,8 @@
             transition: all 0.3s;
         }
         #btn-toggle-robot-size:hover {
-            background: #4dd0e1;
-            color: #000080;
+            background: var(--accent-primary);
+            color: var(--navy);
         }
 
         /* Robot Customization Modal */
@@ -479,8 +505,8 @@
             display: flex;
         }
         .robot-modal {
-            background: #1b263b;
-            border: 2px solid #4dd0e1;
+            background: var(--bg-field);
+            border: 2px solid var(--accent-primary);
             border-radius: 12px;
             padding: 15px;
             width: 550px;
@@ -490,7 +516,7 @@
             box-shadow: 0 8px 32px rgba(77, 208, 225, 0.3);
         }
         .robot-modal h2 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-size: 1.1rem;
             margin-bottom: 10px;
             display: flex;
@@ -499,7 +525,7 @@
         }
         .robot-modal-close {
             cursor: pointer;
-            background: #ff4444;
+            background: var(--accent-danger);
             border: none;
             color: white;
             font-weight: bold;
@@ -518,8 +544,8 @@
             position: relative;
             width: 280px;
             height: 280px;
-            background: #0d1b2a;
-            border: 2px solid #4dd0e1;
+            background: var(--bg-void);
+            border: 2px solid var(--accent-primary);
             border-radius: 8px;
         }
         #robot-editor-canvas {
@@ -544,13 +570,13 @@
             font-size: 0.8rem;
         }
         .dimension-group {
-            background: #0d1b2a;
+            background: var(--bg-void);
             padding: 10px;
             border-radius: 8px;
-            border: 1px solid #0f3460;
+            border: 1px solid var(--border-default);
         }
         .dimension-group h4 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-size: 0.8rem;
             margin-bottom: 8px;
         }
@@ -570,7 +596,7 @@
             font-size: 0.75rem;
         }
         .dimension-row span {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-size: 0.7rem;
         }
         .symmetry-toggle {
@@ -582,15 +608,15 @@
         .symmetry-toggle input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #4dd0e1;
+            accent-color: var(--accent-primary);
         }
         .symmetry-toggle label {
             font-size: 0.8rem;
             cursor: pointer;
         }
         .btn-reset {
-            background: #ffff99;
-            color: #000080;
+            background: var(--accent-warn);
+            color: var(--navy);
             font-weight: bold;
             padding: 8px 12px;
             border: none;
@@ -601,11 +627,11 @@
             transition: all 0.3s;
         }
         .btn-reset:hover {
-            background: #ffeb3b;
+            background: var(--accent-warn);
         }
         .btn-save {
-            background: #4dd0e1;
-            color: #000080;
+            background: var(--accent-primary);
+            color: var(--navy);
             font-weight: bold;
             padding: 8px 12px;
             border: none;
@@ -616,17 +642,17 @@
             transition: all 0.3s;
         }
         .btn-save:hover {
-            background: #00bcd4;
+            background: var(--accent-primary);
         }
         .robot-dimensions-display {
             margin-top: 8px;
             padding: 8px;
-            background: #0d1b2a;
+            background: var(--bg-void);
             border-radius: 8px;
-            border: 1px solid #0f3460;
+            border: 1px solid var(--border-default);
         }
         .robot-dimensions-display h4 {
-            color: #4dd0e1;
+            color: var(--accent-primary);
             font-size: 0.75rem;
             margin-bottom: 6px;
         }
@@ -637,10 +663,10 @@
             margin-bottom: 3px;
         }
         .dim-display-row span:first-child {
-            color: #ffffff;
+            color: var(--text-primary);
         }
         .dim-display-row span:last-child {
-            color: #ffff99;
+            color: var(--accent-warn);
         }
 
     </style>
@@ -655,7 +681,7 @@
         <h1><img src="Logo/iconrb.png" alt="RBRIZZ"><span class="inspired-by">inspired by</span><img src="Logo/slr.jpg" class="slr-icon" alt=""><img src="Logo/astro.png" class="astro-icon" alt=""></h1>
         <div class="header-title">OdometryMap</div>
         <div class="controls">
-            <button id="btn-install" style="display: none; padding: 6px 12px; background: #4dd0e1; color: #000080; border: none; border-radius: 5px; font-weight: bold; font-size: 0.8rem; cursor: pointer; font-family: 'Orbitron', 'Courier New', Courier, monospace;">Install App</button>
+            <button id="btn-install" style="display: none; padding: 6px 12px; background: var(--accent-primary); color: var(--navy); border: none; border-radius: 5px; font-weight: bold; font-size: 0.8rem; cursor: pointer; font-family: 'Orbitron', 'Courier New', Courier, monospace;">Install App</button>
             <div class="field-select-group">
                 <div class="control-group">
                     <label for="year-select">Year:</label>
@@ -729,12 +755,12 @@
                             <h4>Overall Dimensions</h4>
                             <div class="dimension-row">
                                 <label>Width:</label>
-                                <input type="number" id="robot-total-width" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <input type="number" id="robot-total-width" value="250" min="1" max="250" readonly style="background:var(--bg-void);">
                                 <span>mm</span>
                             </div>
                             <div class="dimension-row">
                                 <label>Length:</label>
-                                <input type="number" id="robot-total-length" value="250" min="1" max="250" readonly style="background:#0d1b2a;">
+                                <input type="number" id="robot-total-length" value="250" min="1" max="250" readonly style="background:var(--bg-void);">
                                 <span>mm</span>
                             </div>
                         </div>
@@ -837,8 +863,8 @@
                     <button class="btn btn-danger" id="btn-stop" style="flex:1; padding: 6px;" disabled>Stop</button>
                 </div>
                 <div id="record-output" style="margin-top: 10px; display: none;">
-                    <label style="font-size: 0.85rem; color: #ffffff;">Python Output:</label>
-                    <textarea id="python-output" readonly style="width: 100%; height: 80px; margin-top: 5px; background: #1a1a2e; color: #4dd0e1; border: 1px solid #0f3460; border-radius: 5px; font-family: monospace; font-size: 0.8rem; resize: none;"></textarea>
+                    <label style="font-size: 0.85rem; color: var(--text-primary);">Python Output:</label>
+                    <textarea id="python-output" readonly style="width: 100%; height: 80px; margin-top: 5px; background: var(--input-bg); color: var(--accent-primary); border: 1px solid var(--border-default); border-radius: 5px; font-family: monospace; font-size: 0.8rem; resize: none;"></textarea>
                     <button class="btn btn-secondary" id="btn-copy" style="margin-top: 5px; padding: 5px;">Copy to Clipboard</button>
                 </div>
             </div>
@@ -857,7 +883,7 @@
 
             <div class="sidebar-section" id="saved-routes-section" style="display: none;">
                 <h3>Saved Routes</h3>
-                <div id="saved-routes-list" style="height: 200px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid #4dd0e1; border-radius: 5px; padding: 5px;"></div>
+                <div id="saved-routes-list" style="height: 200px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid var(--accent-primary); border-radius: 5px; padding: 5px;"></div>
                 <div style="display: flex; gap: 5px;">
                     <button class="btn btn-danger" id="btn-delete-all-routes" style="flex:1; padding: 5px; font-size: 0.8rem;">Delete All</button>
                 </div>
@@ -865,8 +891,8 @@
 
             <div class="sidebar-section" id="route-loaded-info" style="display: none;">
                 <h3>Loaded Route</h3>
-                <div id="loaded-route-name" style="color: #ff9900; font-weight: bold; margin-bottom: 5px;"></div>
-                <button class="btn" id="btn-unload-route" style="padding: 5px; font-size: 0.8rem; background: #4dd0e1; color: #000080; font-weight: bold;">
+                <div id="loaded-route-name" style="color: var(--route-primary); font-weight: bold; margin-bottom: 5px;"></div>
+                <button class="btn" id="btn-unload-route" style="padding: 5px; font-size: 0.8rem; background: var(--accent-primary); color: var(--navy); font-weight: bold;">
                     Unload Route
                 </button>
             </div>
@@ -885,7 +911,7 @@
             <div class="sidebar-section" id="saved-lines-section">
                 <h3>Saved Lines</h3>
                 <button class="btn btn-primary" id="btn-save-lines" style="margin-bottom:6px; padding:6px; font-size:0.85rem;">&#128190; Save Current Lines</button>
-                <div id="saved-lines-list" style="max-height:160px; overflow-y:auto; margin-bottom:8px; border:1px solid #4dd0e1; border-radius:5px; padding:5px;"></div>
+                <div id="saved-lines-list" style="max-height:160px; overflow-y:auto; margin-bottom:8px; border:1px solid var(--accent-primary); border-radius:5px; padding:5px;"></div>
                 <button class="btn btn-danger" id="btn-delete-all-lines" style="padding:5px; font-size:0.8rem;">Delete All</button>
             </div>
 
@@ -1105,17 +1131,22 @@
 
         // Colors
         const COLORS = {
-            field: '#0d1b2a',
-            grid: '#1b263b',
-            line: '#ff0000',
-            triangleLegs: '#4dd0e1',
+            field: getCssVar('--bg-field'),
+            grid: getCssVar('--bg-grid'),
+            line: getCssVar('--accent-line'),
+            triangleLegs: getCssVar('--accent-primary'),
             robot: 'rgba(0, 0, 128, 0.1)',
-            crosshair: '#4dd0e1',
-            startPoint: '#000080',
-            endPoint: '#ff0000',
-            text: '#ff0000',
-            angleArc: '#4dd0e1'
+            crosshair: getCssVar('--accent-primary'),
+            startPoint: getCssVar('--navy'),
+            endPoint: getCssVar('--accent-line'),
+            text: getCssVar('--text-primary'),
+            angleArc: getCssVar('--accent-primary')
         };
+
+        // Helper to get CSS variable value
+        function getCssVar(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
 
         // Initialize canvas
         function initCanvas() {
@@ -1157,7 +1188,7 @@
             }
 
             const text = absAngleDeg.toFixed(1) + '°';
-            ctx.font = 'bold 16px Orbitron, Courier New, monospace';
+            ctx.font = 'bold 16px ' + getCssVar('--font-ui');
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -1166,19 +1197,32 @@
             const tx = Math.max(margin, Math.min(canvasWidth - margin, start.x));
             const ty = Math.max(margin, Math.min(canvasHeight - margin, start.y + 25));
 
+            // Draw short fixed-length reference line (showing 0° direction to the right)
+            const referenceLength = 20; // Fixed length in pixels
+            const refX = start.x + referenceLength;
+            const refY = start.y;
+
+            // White outline for reference line
+            ctx.strokeStyle = getCssVar('--text-primary');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(refX, refY);
+            ctx.stroke();
+
             // White outline
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = getCssVar('--text-primary');
             ctx.lineWidth = 3;
             ctx.strokeText(text, tx, ty);
 
             // Red fill
-            ctx.fillStyle = '#ff0000';
+            ctx.fillStyle = getCssVar('--accent-line');
             ctx.fillText(text, tx, ty);
         }
 
         // Draw line with white outline for visibility
         function drawLineWithOutline(x1, y1, x2, y2, color, lineWidth, outlineWidth) {
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = getCssVar('--text-primary');
             ctx.lineWidth = outlineWidth;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
@@ -1195,13 +1239,13 @@
 
         // Draw text with white outline
         function drawTextWithOutline(text, x, y, fontSize, color) {
-            ctx.font = `bold ${fontSize}px Orbitron, Courier New, monospace`;
+            ctx.font = `bold ${fontSize}px ${getCssVar('--font-ui')}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
             // White outline
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = COLORS.textPrimary;
+            ctx.lineWidth = 2;
             ctx.strokeText(text, x, y);
 
             // Red fill
@@ -1247,13 +1291,13 @@
             const endY = odometryOrigin.y - barLength * Math.cos(angleRad);
 
             // Draw bar with white outline
-            drawLineWithOutline(odometryOrigin.x, odometryOrigin.y, endX, endY, '#000080', 4, 7);
+            drawLineWithOutline(odometryOrigin.x, odometryOrigin.y, endX, endY, getCssVar('--navy'), 4, 7);
 
             // Draw arrow head at the end (pointing in direction of angle)
             const arrowAngle1 = Math.atan2(-Math.cos(angleRad), Math.sin(angleRad)) + Math.PI * 0.8;
             const arrowAngle2 = Math.atan2(-Math.cos(angleRad), Math.sin(angleRad)) - Math.PI * 0.8;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.moveTo(endX, endY);
             ctx.lineTo(endX + arrowSize * Math.cos(arrowAngle1), endY + arrowSize * Math.sin(arrowAngle1));
@@ -1261,7 +1305,7 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = '#000080';
+            ctx.fillStyle = getCssVar('--navy');
             ctx.beginPath();
             ctx.moveTo(endX, endY);
             ctx.lineTo(endX + (arrowSize - 3) * Math.cos(arrowAngle1), endY + (arrowSize - 3) * Math.sin(arrowAngle1));
@@ -1286,7 +1330,7 @@
             const yEnd2 = yIntersects[1];
 
             // Draw Y-axis (0° to 180° line)
-            ctx.strokeStyle = '#4dd0e1';
+            ctx.strokeStyle = getCssVar('--accent-primary');
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 4]);
             ctx.beginPath();
@@ -1301,7 +1345,7 @@
             const arrowAngle1 = Math.atan2(yDirY, yDirX) + Math.PI * 0.85;
             const arrowAngle2 = Math.atan2(yDirY, yDirX) - Math.PI * 0.85;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.moveTo(arrowX, arrowY);
             ctx.lineTo(arrowX + 14 * Math.cos(arrowAngle1), arrowY + 14 * Math.sin(arrowAngle1));
@@ -1309,7 +1353,7 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = '#4dd0e1';
+            ctx.fillStyle = getCssVar('--accent-primary');
             ctx.beginPath();
             ctx.moveTo(arrowX, arrowY);
             ctx.lineTo(arrowX + 10 * Math.cos(arrowAngle1), arrowY + 10 * Math.sin(arrowAngle1));
@@ -1328,7 +1372,7 @@
             const xEnd2 = xIntersects[1];
 
             // Draw X-axis (90° to -90° line)
-            ctx.strokeStyle = '#4dd0e1';
+            ctx.strokeStyle = getCssVar('--accent-primary');
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 4]);
             ctx.beginPath();
@@ -1343,7 +1387,7 @@
             const xArrowAngle1 = Math.atan2(xDirY, xDirX) + Math.PI * 0.85;
             const xArrowAngle2 = Math.atan2(xDirY, xDirX) - Math.PI * 0.85;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.moveTo(xArrowX, xArrowY);
             ctx.lineTo(xArrowX + 12 * Math.cos(xArrowAngle1), xArrowY + 12 * Math.sin(xArrowAngle1));
@@ -1351,7 +1395,7 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = '#4dd0e1';
+            ctx.fillStyle = getCssVar('--accent-primary');
             ctx.beginPath();
             ctx.moveTo(xArrowX, xArrowY);
             ctx.lineTo(xArrowX + 9 * Math.cos(xArrowAngle1), xArrowY + 9 * Math.sin(xArrowAngle1));
@@ -1361,11 +1405,11 @@
 
             // Label axes with degree values
             // Y-axis: 0° at positive end, 180° at negative end
-            drawTextWithOutline('0°', odometryOrigin.x + 50 * yDirX, odometryOrigin.y + 50 * yDirY, 14, '#4dd0e1');
-            drawTextWithOutline('180°', odometryOrigin.x - 60 * yDirX, odometryOrigin.y - 60 * yDirY, 14, '#4dd0e1');
+            drawTextWithOutline('0°', odometryOrigin.x + 50 * yDirX, odometryOrigin.y + 50 * yDirY, 14, getCssVar('--accent-primary'));
+            drawTextWithOutline('180°', odometryOrigin.x - 60 * yDirX, odometryOrigin.y - 60 * yDirY, 14, getCssVar('--accent-primary'));
             // X-axis: 90° at positive end, -90° at negative end
-            drawTextWithOutline('90°', odometryOrigin.x + 50 * xDirX, odometryOrigin.y + 50 * xDirY, 14, '#4dd0e1');
-            drawTextWithOutline('-90°', odometryOrigin.x - 60 * xDirX, odometryOrigin.y - 60 * xDirY, 14, '#4dd0e1');
+            drawTextWithOutline('90°', odometryOrigin.x + 50 * xDirX, odometryOrigin.y + 50 * xDirY, 14, getCssVar('--accent-primary'));
+            drawTextWithOutline('-90°', odometryOrigin.x - 60 * xDirX, odometryOrigin.y - 60 * xDirY, 14, getCssVar('--accent-primary'));
         }
 
         // Calculate where an axis line from origin intersects canvas edges
@@ -1462,13 +1506,13 @@
 
                     // Horizontal leg distance - red text with white outline
                     const labelX = (start.x + hPoint.x) / 2;
-                    drawTextWithOutline(Math.round(hDist) + 'mm', labelX, start.y - 12, 14, '#ff0000');
+                    drawTextWithOutline(Math.round(hDist) + 'mm', labelX, start.y - 12, 14, getCssVar('--accent-line'));
 
                     // Vertical leg distance - red text with white outline
                     ctx.save();
                     ctx.translate(start.x - 22, (start.y + vPoint.y) / 2);
                     ctx.rotate(-Math.PI / 2);
-                    drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                    drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, getCssVar('--accent-line'));
                     ctx.restore();
                 }
             }
@@ -1478,26 +1522,27 @@
                 drawAngleText(start, end);
             }
 
-            // Draw main line with white outline (bright red)
-            drawLineWithOutline(start.x, start.y, end.x, end.y, COLORS.line, lineWidth, outlineWidth);
+            // Draw main line with white outline (red in normal mode, cyan otherwise)
+            const lineColor = currentMode === 'normal' ? '#ff0000' : COLORS.line;
+            drawLineWithOutline(start.x, start.y, end.x, end.y, lineColor, lineWidth, outlineWidth);
 
             // Draw distance label (red with white outline)
             if (showDistance) {
                 const midX = (start.x + end.x) / 2;
                 const midY = (start.y + end.y) / 2;
-                drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, '#ff0000');
+                drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, getCssVar('--accent-line'));
             }
 
             // Draw wheel degrees label (red with white outline)
             if (showWheelDeg) {
                 const midX = (start.x + end.x) / 2;
                 const midY = (start.y + end.y) / 2;
-                drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, '#ff0000');
+                drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, getCssVar('--accent-line'));
             }
 
             // Draw points
-            drawPoint(start, COLORS.startPoint, pointOuter, pointInner);
-            drawPoint(end, COLORS.endPoint, pointOuter, pointInner);
+            drawPoint(start, getCssVar('--accent-cyan'), pointOuter, pointInner);
+            drawPoint(end, getCssVar('--accent-cyan'), pointOuter, pointInner);
         }
 
         function draw() {
@@ -1537,7 +1582,7 @@
             }
 
             // Draw border
-            ctx.strokeStyle = '#fff';
+            ctx.strokeStyle = getCssVar('--text-primary');
             ctx.lineWidth = 3;
             ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
 
@@ -1547,23 +1592,23 @@
             // Draw odometry origin if set
             if (currentMode === 'odometry' && odometryOrigin) {
                 // Draw origin point - white outer, black inner (same size as other points)
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = COLORS.textPrimary;
                 ctx.beginPath();
                 ctx.arc(odometryOrigin.x, odometryOrigin.y, 10, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.fillStyle = '#000000';
+                ctx.fillStyle = getCssVar('--navy');
                 ctx.beginPath();
                 ctx.arc(odometryOrigin.x, odometryOrigin.y, 7, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Label "origin" above (white outline, black text)
-                ctx.font = 'bold 12px Orbitron, Courier New, monospace';
+                ctx.font = 'bold 12px ' + getCssVar('--font-ui');
                 ctx.textAlign = 'center';
-                drawTextWithOutline('origin', odometryOrigin.x, odometryOrigin.y - 20, 12, '#000000');
+                drawTextWithOutline('origin', odometryOrigin.x, odometryOrigin.y - 20, 12, getCssVar('--navy'));
 
                 // Label "(0, 0)" below (white outline, black text)
-                drawTextWithOutline('(0, 0)', odometryOrigin.x, odometryOrigin.y + 28, 12, '#000000');
+                drawTextWithOutline('(0, 0)', odometryOrigin.x, odometryOrigin.y + 28, 12, getCssVar('--navy'));
 
                 // Draw angle indicator bar if active (waiting for angle to be set)
                 if (isAngleIndicatorActive) {
@@ -1576,46 +1621,36 @@
 
             // Draw "place origin" prompt when origin not yet placed in odometry mode
             if (currentMode === 'odometry' && !odometryOrigin && isMouseOver) {
-                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.font = 'bold 18px ' + getCssVar('--font-ui');
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 // Navy text with white outline
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = COLORS.textPrimary;
                 ctx.lineWidth = 3;
                 ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
-                ctx.fillStyle = '#000080';
+                ctx.fillStyle = getCssVar('--navy');
                 ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
             }
 
             
             // Draw "place origin" prompt when origin not yet placed in route mode
             if (currentMode === 'route' && !routeOrigin && isMouseOver) {
-                ctx.font = 'bold 18px Orbitron, Courier New, monospace';
+                ctx.font = 'bold 18px ' + getCssVar('--font-ui');
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 // Navy text with white outline
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = COLORS.textPrimary;
                 ctx.lineWidth = 3;
                 ctx.strokeText('place origin', mousePos.x, mousePos.y - 30);
-                ctx.fillStyle = '#000080';
+                ctx.fillStyle = getCssVar('--navy');
                 ctx.fillText('place origin', mousePos.x, mousePos.y - 30);
             }
 
-            // Draw odometry points (white outer, navy inner)
+            // Draw odometry points (white outer, cyan inner)
             odometryPoints.forEach(point => {
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#000080';
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Label with rotated coordinate
+                drawPoint(point, getCssVar('--accent-cyan'), 7, 5);
                 const coords = calculateRotatedCoordinates(point.x, point.y);
-                drawTextWithOutline(`(${coords.odoX.toFixed(0)}, ${coords.odoY.toFixed(0)})`, point.x, point.y - 16, 14, '#000080');
+                drawTextWithOutline(`(${coords.odoX.toFixed(0)}, ${coords.odoY.toFixed(0)})`, point.x, point.y - 16, 14, getCssVar('--navy'));
             });
 
             // Draw odometry lines (thinner, red like hover)
@@ -1638,13 +1673,13 @@
 
                         // Horizontal leg distance
                         const labelX = (odoLine.start.x + hPoint.x) / 2;
-                        drawTextWithOutline(Math.round(hDist) + 'mm', labelX, odoLine.start.y - 12, 14, '#ff0000');
+                        drawTextWithOutline(Math.round(hDist) + 'mm', labelX, odoLine.start.y - 12, 14, getCssVar('--accent-line'));
 
                         // Vertical leg distance
                         ctx.save();
                         ctx.translate(odoLine.start.x - 22, (odoLine.start.y + vPoint.y) / 2);
                         ctx.rotate(-Math.PI / 2);
-                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, getCssVar('--accent-line'));
                         ctx.restore();
                     }
                 }
@@ -1653,29 +1688,29 @@
 
                 // Label start point with rotated coordinate
                 const startCoords = calculateRotatedCoordinates(odoLine.start.x, odoLine.start.y);
-                drawTextWithOutline(`(${startCoords.odoX.toFixed(0)}, ${startCoords.odoY.toFixed(0)})`, odoLine.start.x, odoLine.start.y - 16, 14, '#000080');
+                drawTextWithOutline(`(${startCoords.odoX.toFixed(0)}, ${startCoords.odoY.toFixed(0)})`, odoLine.start.x, odoLine.start.y - 16, 14, getCssVar('--navy'));
 
                 // Label end point with rotated coordinate
                 const endCoords = calculateRotatedCoordinates(odoLine.end.x, odoLine.end.y);
-                drawTextWithOutline(`(${endCoords.odoX.toFixed(0)}, ${endCoords.odoY.toFixed(0)})`, odoLine.end.x, odoLine.end.y - 16, 14, '#000080');
+                drawTextWithOutline(`(${endCoords.odoX.toFixed(0)}, ${endCoords.odoY.toFixed(0)})`, odoLine.end.x, odoLine.end.y - 16, 14, getCssVar('--navy'));
             });
 
             // Draw recorded points during recording mode (and after stop)
             if (currentMode === 'odometry' && recordedPoints.length > 0) {
                 recordedPoints.forEach(point => {
                     // Draw point (white outer, navy inner)
-                    ctx.fillStyle = '#ffffff';
+                    ctx.fillStyle = COLORS.textPrimary;
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
                     ctx.fill();
 
-                    ctx.fillStyle = '#000080';
+                    ctx.fillStyle = getCssVar('--navy');
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
                     ctx.fill();
 
                     // Label with rotated coordinate
-                    drawTextWithOutline(`(${point.odoX.toFixed(1)}, ${point.odoY.toFixed(1)})`, point.x, point.y - 16, 14, '#000080');
+                    drawTextWithOutline(`(${point.odoX.toFixed(1)}, ${point.odoY.toFixed(1)})`, point.x, point.y - 16, 14, getCssVar('--navy'));
                 });
             }
 
@@ -1730,13 +1765,13 @@
                     if (showLegs) {
                         // Leg distances with red text and white outline
                         const hDist = Math.abs(toMM(dx));
-                        drawTextWithOutline(Math.round(hDist) + 'mm', (snappedStart.x + hPoint.x) / 2, snappedStart.y - 12, 14, '#ff0000');
+                        drawTextWithOutline(Math.round(hDist) + 'mm', (snappedStart.x + hPoint.x) / 2, snappedStart.y - 12, 14, getCssVar('--accent-line'));
 
                         ctx.save();
                         ctx.translate(snappedStart.x - 22, (snappedStart.y + vPoint.y) / 2);
                         ctx.rotate(-Math.PI / 2);
                         const vDist = Math.abs(toMM(dy));
-                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, '#ff0000');
+                        drawTextWithOutline(Math.round(vDist) + 'mm', 0, 0, 14, getCssVar('--accent-line'));
                         ctx.restore();
                     }
                 }
@@ -1747,12 +1782,12 @@
                 }
 
                 // Draw preview line with white outline (navy color when snapped)
-                const lineColor = (isStartSnapped || isEndSnapped) ? '#000080' : COLORS.line;
+                const lineColor = (isStartSnapped || isEndSnapped) ? getCssVar('--navy') : COLORS.line;
                 drawLineWithOutline(snappedStart.x, snappedStart.y, snappedPreview.x, snappedPreview.y, lineColor, 5, 9);
 
                 // Draw snapped indicator circle
                 if (isEndSnapped) {
-                    ctx.strokeStyle = '#000080';
+                    ctx.strokeStyle = getCssVar('--navy');
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     ctx.arc(snappedPreview.x, snappedPreview.y, 15, 0, Math.PI * 2);
@@ -1763,19 +1798,19 @@
                 if (showDistance) {
                     const midX = (snappedStart.x + snappedPreview.x) / 2;
                     const midY = (snappedStart.y + snappedPreview.y) / 2;
-                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, '#ff0000');
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 20, 15, getCssVar('--accent-line'));
                 }
 
                 // Preview wheel degrees (red with white outline)
                 if (showWheelDeg) {
                     const midX = (snappedStart.x + snappedPreview.x) / 2;
                     const midY = (snappedStart.y + snappedPreview.y) / 2;
-                    drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, '#ff0000');
+                    drawTextWithOutline(wheelDeg.toFixed(1) + '°', midX, midY + 24, 14, getCssVar('--accent-line'));
                 }
 
                 // Draw start point (show snapped position if snapped)
                 const drawStart = isStartSnapped ? snappedStart : startPoint;
-                drawPoint(drawStart, COLORS.startPoint, 7, 5);
+                drawPoint(drawStart, getCssVar('--accent-cyan'), 7, 5);
             }
 
             // Draw saved edge lines
@@ -1785,13 +1820,13 @@
                 if (el.edge === 'bottom') { x1 = el.px; y1 = canvasHeight; x2 = el.px; y2 = el.py; }
                 if (el.edge === 'left')   { x1 = 0;     y1 = el.py;        x2 = el.px; y2 = el.py; }
                 if (el.edge === 'right')  { x1 = canvasWidth; y1 = el.py;  x2 = el.px; y2 = el.py; }
-                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                drawLineWithOutline(x1, y1, x2, y2, getCssVar('--measurement-line'), 2, 5);
                 // Tick marks at edge
                 const tickLen = 8;
                 if (el.edge === 'top' || el.edge === 'bottom') {
-                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, getCssVar('--measurement-line'), 2, 5);
                 } else {
-                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, getCssVar('--measurement-line'), 2, 5);
                 }
                 // Label inside canvas
                 let lx, ly;
@@ -1799,7 +1834,7 @@
                 if (el.edge === 'bottom') { lx = el.px + 22; ly = Math.min((canvasHeight + el.py) / 2, canvasHeight - 14); }
                 if (el.edge === 'left')   { lx = Math.max(el.px / 2, 30); ly = el.py - 14; }
                 if (el.edge === 'right')  { lx = Math.min((canvasWidth + el.px) / 2, canvasWidth - 30); ly = el.py - 14; }
-                drawTextWithOutline(Math.round(el.distMM) + 'mm', lx, ly, 13, '#00ccff');
+                drawTextWithOutline(Math.round(el.distMM) + 'mm', lx, ly, 13, getCssVar('--measurement-line'));
             });
 
             // Draw edge measure preview
@@ -1809,19 +1844,19 @@
                 if (edgeMeasureMode === 'bottom') { x1 = mousePos.x; y1 = canvasHeight; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasHeight - mousePos.y); }
                 if (edgeMeasureMode === 'left')   { x1 = 0;     y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(mousePos.x); }
                 if (edgeMeasureMode === 'right')  { x1 = canvasWidth; y1 = mousePos.y; x2 = mousePos.x; y2 = mousePos.y; distMM = toMM(canvasWidth - mousePos.x); }
-                drawLineWithOutline(x1, y1, x2, y2, '#00ccff', 2, 5);
+                drawLineWithOutline(x1, y1, x2, y2, getCssVar('--measurement-line'), 2, 5);
                 const tickLen = 8;
                 if (edgeMeasureMode === 'top' || edgeMeasureMode === 'bottom') {
-                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, '#00ccff', 2, 5);
+                    drawLineWithOutline(x1 - tickLen, y1, x1 + tickLen, y1, getCssVar('--measurement-line'), 2, 5);
                 } else {
-                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, '#00ccff', 2, 5);
+                    drawLineWithOutline(x1, y1 - tickLen, x1, y1 + tickLen, getCssVar('--measurement-line'), 2, 5);
                 }
                 let lx, ly;
                 if (edgeMeasureMode === 'top')    { lx = mousePos.x + 22; ly = Math.max(mousePos.y / 2, 14); }
                 if (edgeMeasureMode === 'bottom') { lx = mousePos.x + 22; ly = Math.min((canvasHeight + mousePos.y) / 2, canvasHeight - 14); }
                 if (edgeMeasureMode === 'left')   { lx = Math.max(mousePos.x / 2, 30); ly = mousePos.y - 14; }
                 if (edgeMeasureMode === 'right')  { lx = Math.min((canvasWidth + mousePos.x) / 2, canvasWidth - 30); ly = mousePos.y - 14; }
-                drawTextWithOutline(Math.round(distMM) + 'mm', lx, ly, 13, '#00ccff');
+                drawTextWithOutline(Math.round(distMM) + 'mm', lx, ly, 13, getCssVar('--measurement-line'));
             }
 
             // Draw robot cursor
@@ -1831,8 +1866,8 @@
                 // Draw odometry coordinates if enabled and origin is set
                 if (currentMode === 'odometry' && odometryOrigin && !isAngleIndicatorActive) {
                     const coords = calculateRotatedCoordinates(mousePos.x, mousePos.y);
-                    drawTextWithOutline(`X: ${coords.odoX.toFixed(0)}mm`, mousePos.x, mousePos.y - 20, 12, '#4dd0e1');
-                    drawTextWithOutline(`Y: ${coords.odoY.toFixed(0)}mm`, mousePos.x, mousePos.y - 35, 12, '#4dd0e1');
+                    drawTextWithOutline(`X: ${coords.odoX.toFixed(0)}mm`, mousePos.x, mousePos.y - 20, 12, getCssVar('--accent-primary'));
+                    drawTextWithOutline(`Y: ${coords.odoY.toFixed(0)}mm`, mousePos.x, mousePos.y - 35, 12, getCssVar('--accent-primary'));
                 }
             }
 
@@ -1842,7 +1877,7 @@
                 const route = routesToDraw[loadedRouteIndex];
                 if (route) {
                     // Draw route origin crosshair
-                    ctx.strokeStyle = '#ff9900';
+                    ctx.strokeStyle = getCssVar('--route-primary');
                     ctx.lineWidth = 1;
                     ctx.setLineDash([4, 4]);
                     ctx.beginPath();
@@ -1857,12 +1892,12 @@
 
                     // Draw route points
                     route.points.forEach(point => {
-                        ctx.fillStyle = '#ffffff';
+                        ctx.fillStyle = COLORS.textPrimary;
                         ctx.beginPath();
                         ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
                         ctx.fill();
 
-                        ctx.fillStyle = '#ff9900';
+                        ctx.fillStyle = getCssVar('--route-primary');
                         ctx.beginPath();
                         ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
                         ctx.fill();
@@ -1878,7 +1913,7 @@
                             drawLineWithOutline(routeLine.start.x, routeLine.start.y, vPoint.x, vPoint.y, COLORS.triangleLegs, 3, 6);
                         }
 
-                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, '#ff9900', 3, 6);
+                        drawLineWithOutline(routeLine.start.x, routeLine.start.y, routeLine.end.x, routeLine.end.y, getCssVar('--route-primary'), 3, 6);
                     });
                 }
             }
@@ -1886,23 +1921,23 @@
             // Draw current route being planned
             if (routeOrigin) {
                 // Draw origin point - white outer, black inner
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = COLORS.textPrimary;
                 ctx.beginPath();
                 ctx.arc(routeOrigin.x, routeOrigin.y, 10, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.fillStyle = '#000000';
+                ctx.fillStyle = getCssVar('--navy');
                 ctx.beginPath();
                 ctx.arc(routeOrigin.x, routeOrigin.y, 7, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Label "origin" above (white outline, black text)
-                drawTextWithOutline('origin', routeOrigin.x, routeOrigin.y - 20, 12, '#000000');
+                drawTextWithOutline('origin', routeOrigin.x, routeOrigin.y - 20, 12, getCssVar('--navy'));
 
                 // Label coordinate "(x, y)" below (white outline, black text)
                 const originOdoX = toMM(routeOrigin.x - routeOrigin.x);
                 const originOdoY = toMM(routeOrigin.y - routeOrigin.y);
-                drawTextWithOutline(`(${originOdoX.toFixed(0)}, ${originOdoY.toFixed(0)})`, routeOrigin.x, routeOrigin.y + 28, 12, '#000000');
+                drawTextWithOutline(`(${originOdoX.toFixed(0)}, ${originOdoY.toFixed(0)})`, routeOrigin.x, routeOrigin.y + 28, 12, getCssVar('--navy'));
 
                 // Draw ALL route lines (including pending)
                 // First draw confirmed lines
@@ -1921,7 +1956,7 @@
                     const dist = calculateDistance(routeLine.start, routeLine.end);
                     const midX = (routeLine.start.x + routeLine.end.x) / 2;
                     const midY = (routeLine.start.y + routeLine.end.y) / 2;
-                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, getCssVar('--accent-line'));
                 });
 
                 // Draw route points (after origin) - all black with coordinate above, label below
@@ -1929,19 +1964,19 @@
                     if (idx === 0) return; // Skip origin point
 
                     // Draw point - white outer, black inner
-                    ctx.fillStyle = '#ffffff';
+                    ctx.fillStyle = COLORS.textPrimary;
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
                     ctx.fill();
 
-                    ctx.fillStyle = '#000000';
+                    ctx.fillStyle = getCssVar('--navy');
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
                     ctx.fill();
 
                     // Hover highlight
                     if (hoveredNodeIndex === idx) {
-                        ctx.strokeStyle = '#4dd0e1';
+                        ctx.strokeStyle = getCssVar('--accent-primary');
                         ctx.lineWidth = 2;
                         ctx.beginPath();
                         ctx.arc(point.x, point.y, 12, 0, Math.PI * 2);
@@ -1951,10 +1986,10 @@
                     // Label coordinate above (white outline, black text)
                     const odoX = toMM(point.x - routeOrigin.x);
                     const odoY = toMM(routeOrigin.y - point.y);
-                    drawTextWithOutline(`(${odoX.toFixed(0)}, ${odoY.toFixed(0)})`, point.x, point.y - 16, 12, '#000000');
+                    drawTextWithOutline(`(${odoX.toFixed(0)}, ${odoY.toFixed(0)})`, point.x, point.y - 16, 12, getCssVar('--navy'));
 
                     // Label point number below (white outline, black text)
-                    drawTextWithOutline(`P${idx}`, point.x, point.y + 18, 10, '#000000');
+                    drawTextWithOutline(`P${idx}`, point.x, point.y + 18, 10, getCssVar('--navy'));
                 });
 
                 // Then draw pending line
@@ -1973,13 +2008,13 @@
                     const dist = calculateDistance(routePendingLine.start, routePendingLine.end);
                     const midX = (routePendingLine.start.x + routePendingLine.end.x) / 2;
                     const midY = (routePendingLine.start.y + routePendingLine.end.y) / 2;
-                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, '#ff0000');
+                    drawTextWithOutline(dist.toFixed(0) + 'mm', midX, midY - 12, 14, getCssVar('--accent-line'));
                 }
             }
         }
 
         function drawPoint(point, color, outer = 5, inner = 3) {
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.arc(point.x, point.y, outer, 0, Math.PI * 2);
             ctx.fill();
@@ -2004,7 +2039,7 @@
             const robotTop = y - halfH + offsetY;
 
             // Draw see-through box with white outline
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = COLORS.textPrimary;
             ctx.lineWidth = 2;
             ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
 
@@ -2013,7 +2048,7 @@
             ctx.strokeRect(robotLeft, robotTop, halfW * 2, halfH * 2);
 
             // Draw directional indicator (front arrow) - pointing up (negative Y)
-            ctx.fillStyle = '#ffff99';
+            ctx.fillStyle = getCssVar('--accent-warn');
             ctx.beginPath();
             const arrowSize = 10;
             ctx.moveTo(x, robotTop - arrowSize);
@@ -2023,11 +2058,11 @@
             ctx.fill();
 
             // Draw center point at mouse position
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.arc(x, y, 5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#ff0000';
+            ctx.fillStyle = getCssVar('--accent-line');
             ctx.beginPath();
             ctx.arc(x, y, 3, 0, Math.PI * 2);
             ctx.fill();
@@ -2629,21 +2664,21 @@
             const sets = getSavedLinesSets();
             list.innerHTML = '';
             if (sets.length === 0) {
-                list.innerHTML = '<div style="color:#666;text-align:center;padding:12px;font-size:0.8rem;">No saved lines</div>';
+                list.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:12px;font-size:0.8rem;">No saved lines</div>';
                 return;
             }
             sets.forEach((set, idx) => {
                 const realIdx = sets.length - 1 - idx;
                 const set_ = sets[realIdx];
                 const div = document.createElement('div');
-                div.style.cssText = 'padding:6px 8px;background:#0d1b2a;margin-bottom:4px;border-radius:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;';
+                div.style.cssText = 'padding:6px 8px;background:var(--bg-void);margin-bottom:4px;border-radius:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;';
                 div.innerHTML = `
                     <div style="display:flex;flex-direction:column;">
-                        <span style="color:#4dd0e1;font-weight:bold;font-size:0.85rem;">${set_.name}</span>
-                        <span style="color:#666;font-size:0.7rem;">${set_.lines.length} lines, ${set_.edgeLines.length} edge lines</span>
+                        <span style="color:var(--accent-primary);font-weight:bold;font-size:0.85rem;">${set_.name}</span>
+                        <span style="color:var(--text-muted);font-size:0.7rem;">${set_.lines.length} lines, ${set_.edgeLines.length} edge lines</span>
                     </div>
                     <div style="display:flex;gap:4px;">
-                        <button class="btn" style="padding:2px 7px;font-size:0.75rem;background:#4dd0e1;color:#000080;" onclick="loadLinesSet(${realIdx})">Load</button>
+                        <button class="btn" style="padding:2px 7px;font-size:0.75rem;background:var(--accent-primary);color:var(--navy);" onclick="loadLinesSet(${realIdx})">Load</button>
                         <button class="btn btn-danger" style="padding:2px 7px;font-size:0.75rem;" onclick="deleteLinesSet(${realIdx})">X</button>
                     </div>
                 `;
@@ -2813,11 +2848,11 @@
             const ctx = robotEditorCtx;
 
             // Clear canvas
-            ctx.fillStyle = '#0d1b2a';
+            ctx.fillStyle = getCssVar('--bg-void');
             ctx.fillRect(0, 0, EDITOR_SIZE, EDITOR_SIZE);
 
             // Draw grid
-            ctx.strokeStyle = '#1b263b';
+            ctx.strokeStyle = getCssVar('--bg-grid');
             ctx.lineWidth = 1;
             const gridStep = 25 * PIXELS_PER_MM;
             for (let i = 0; i <= EDITOR_SIZE; i += gridStep) {
@@ -2838,17 +2873,17 @@
             const rightPx = ROBOT_DIMENSIONS.right * PIXELS_PER_MM;
 
             // Draw center point (origin)
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = COLORS.textPrimary;
             ctx.beginPath();
             ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 6, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#ff0000';
+            ctx.fillStyle = getCssVar('--accent-line');
             ctx.beginPath();
             ctx.arc(EDITOR_CENTER, EDITOR_CENTER, 4, 0, Math.PI * 2);
             ctx.fill();
 
             // Draw guide lines from center to each side
-            ctx.strokeStyle = '#4dd0e1';
+            ctx.strokeStyle = getCssVar('--accent-primary');
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
 
@@ -2880,7 +2915,7 @@
 
             // Draw robot outline
             ctx.fillStyle = 'rgba(0, 0, 128, 0.3)';
-            ctx.strokeStyle = '#4dd0e1';
+            ctx.strokeStyle = getCssVar('--accent-primary');
             ctx.lineWidth = 3;
 
             ctx.beginPath();
@@ -2893,7 +2928,7 @@
             ctx.stroke();
 
             // Draw directional indicator (front arrow)
-            ctx.fillStyle = '#ffff99';
+            ctx.fillStyle = getCssVar('--accent-warn');
             ctx.beginPath();
             const arrowSize = 10;
             ctx.moveTo(EDITOR_CENTER, EDITOR_CENTER - frontPx - arrowSize);
@@ -2903,8 +2938,8 @@
             ctx.fill();
 
             // Draw labels
-            ctx.font = 'bold 10px Orbitron, monospace';
-            ctx.fillStyle = '#4dd0e1';
+            ctx.font = 'bold 10px ' + getCssVar('--font-ui');
+            ctx.fillStyle = getCssVar('--accent-primary');
             ctx.textAlign = 'center';
             ctx.fillText('FRONT', EDITOR_CENTER, EDITOR_CENTER - frontPx - 18);
             ctx.fillText('REAR', EDITOR_CENTER, EDITOR_CENTER + rearPx + 20);
@@ -2915,8 +2950,8 @@
             const handleRadius = 8;
 
             // Front handle
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#4dd0e1';
+            ctx.fillStyle = COLORS.textPrimary;
+            ctx.strokeStyle = getCssVar('--accent-primary');
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(EDITOR_CENTER, EDITOR_CENTER - frontPx, handleRadius, 0, Math.PI * 2);
@@ -2942,8 +2977,8 @@
             ctx.stroke();
 
             // Draw dimension values on the lines
-            ctx.font = 'bold 9px Orbitron, monospace';
-            ctx.fillStyle = '#ffff99';
+            ctx.font = 'bold 9px ' + getCssVar('--font-ui');
+            ctx.fillStyle = getCssVar('--accent-warn');
             ctx.fillText(ROBOT_DIMENSIONS.front + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER - frontPx/2);
             ctx.fillText(ROBOT_DIMENSIONS.rear + 'mm', EDITOR_CENTER + 12, EDITOR_CENTER + rearPx/2);
             ctx.fillText(ROBOT_DIMENSIONS.left + 'mm', EDITOR_CENTER - leftPx/2, EDITOR_CENTER - 12);
@@ -3386,13 +3421,13 @@
             list.innerHTML = '';
 
             if (routes.length === 0) {
-                list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+                list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
                 return;
             }
 
             routes.forEach((route, index) => {
                 const routeDiv = document.createElement('div');
-                routeDiv.style.cssText = 'padding: 8px; background: #0d1b2a; margin-bottom: 5px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
+                routeDiv.style.cssText = 'padding: 8px; background: var(--bg-void); margin-bottom: 5px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
 
                 // Format timestamp to readable date/time
                 const date = new Date(route.timestamp);
@@ -3401,9 +3436,9 @@
 
                 routeDiv.innerHTML = `
                     <div style="display: flex; flex-direction: column;">
-                        <span style="color: #ff9900; font-weight: bold;">${route.name}</span>
-                        <span style="color: #ffff66; font-size: 0.7rem;">${dateStr} ${timeStr}</span>
-                        <span style="color: #666; font-size: 0.7rem;">${route.points.length} points</span>
+                        <span style="color: var(--route-primary); font-weight: bold;">${route.name}</span>
+                        <span style="color: var(--route-secondary); font-size: 0.7rem;">${dateStr} ${timeStr}</span>
+                        <span style="color: var(--text-muted); font-size: 0.7rem;">${route.points.length} points</span>
                     </div>
                     <button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="deleteRoute(${index})">X</button>
                 `;
@@ -3478,7 +3513,7 @@
             localStorage.removeItem('rbrizz_saved_routes');
             // Clear the list but keep the section visible
             const list = document.getElementById('saved-routes-list');
-            list.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
+            list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.8rem;">No saved routes</div>';
             draw();
         });
 
