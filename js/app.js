@@ -37,13 +37,10 @@ let selection = { competition: DEFAULT_COMPETITION, year: DEFAULT_YEAR, category
 let ctx = null;
 let fieldImg = null;
 	let canvasW = 0, canvasH = 0;
-	let sx = 1, sy = 1;            // CSS px per mm, per axis (ctx scaled by dpr)
-	let bootDpr = window.devicePixelRatio || 1;
-	function dprAtBoot() { return bootDpr; }
-// Last CSS size the canvas was laid out at — kept at module scope so the
-// resize/re-layout guard actually holds across initCanvas calls, which
-// keeps the canvas stable (no redraw loop) at any window size.
-let lastAppliedCss = { w: -1, h: -1 };
+	let sx = 1, sy = 1;            // CSS px per mm, per axis (CSS canvas coords)
+// Last CSS size + dpr the canvas was laid out at. Guard holds across
+// initCanvas calls so browser zoom / resize re-lays out only when needed.
+let lastAppliedCss = { w: -1, h: -1, dpr: -1 };
 let scaleReady = false;
 let pendingRedraw = false;
 // ---------------------------------------------------------------------------// App state// ---------------------------------------------------------------------------
@@ -72,14 +69,41 @@ let draggedNodeIndex = null;
 // ---------------------------------------------------------------------------// Init// ---------------------------------------------------------------------------
 function init() {	const boot = () => {		setupSelectionUI();		setupModeUI();		setupWheelUI();		setupCanvasUI();		setupResizeObserver();		restoreOrDefaultSelection();		draw();		updatePanel();	}
 ;	// Boot once fonts are ready, or after 3s as a fallback so the app	// never stays stuck on the loading screen if a font fails to
- Promise.race([		document.fonts.ready,		new Promise(r => setTimeout(r, 3000))	]).then(boot);	if ('serviceWorker' in navigator) {		window.addEventListener('load', () => {			navigator.serviceWorker.register('./sw.js').catch(() => {}
-);		}
-);	}	let deferredInstall;	window.addEventListener('beforeinstallprompt', (e) => {		e.preventDefault();		deferredInstall = e;		elInstallBtn.classList.remove('hidden');		elInstallBtn.addEventListener('click', () => {			deferredInstall.prompt();			deferredInstall.userChoice.then(() => {				deferredInstall = null;				elInstallBtn.classList.add('hidden');			}
-);		}
-, { once: true }
-);	}
-);	window.addEventListener('appinstalled', () => { elInstallBtn.classList.add('hidden'); }
-);
+ Promise.race([		document.fonts.ready,		new Promise(r => setTimeout(r, 3000))	]).then(boot);	if ('serviceWorker' in navigator) {		window.addEventListener('load', () => {			navigator.serviceWorker.register('./sw.js').catch((e) => {
+				console.warn('[OdomMap] Service worker registration failed:', e);
+			});
+		});	}
+	let deferredInstall;
+	let installPromptSeen = false;
+	window.addEventListener('beforeinstallprompt', (e) => {
+		e.preventDefault();
+		deferredInstall = e;
+		installPromptSeen = true;
+		console.info('[OdomMap PWA] beforeinstallprompt received; install button shown');
+		elInstallBtn.classList.remove('hidden');
+		elInstallBtn.addEventListener('click', () => {
+			deferredInstall.prompt();
+			deferredInstall.userChoice.then((choice) => {
+				console.info('[OdomMap PWA] install userChoice:', choice.outcome);
+				deferredInstall = null;
+				elInstallBtn.classList.add('hidden');
+			});
+		});
+	}, { once: true });
+
+	// If the browser never offers beforeinstallprompt on this origin, the PWA
+	// install UI is deferred to the browser's omnibox (per-origin engagement
+	// gating). Log so the difference between origins is observable.
+	setTimeout(() => {
+		if (!installPromptSeen) {
+			console.info('[OdomMap PWA] no beforeinstallprompt on this origin; install via browser omnibox if available');
+		}
+	}, 0);
+
+	window.addEventListener('appinstalled', () => {
+		console.info('[OdomMap PWA] appinstalled');
+		elInstallBtn.classList.add('hidden');
+	});
 }
 function catLabel(cat) {	const cap = cat.charAt(0).toUpperCase() + cat.slice(1);	return cap.replace('-', ' ');
 }
@@ -175,7 +199,9 @@ function initCanvas() {
 	const rect = elCanvasContainer.getBoundingClientRect();
 	const stageW = rect.width;
 	const stageH = rect.height;
-	const dpr = dprAtBoot();
+	// Use the *current* device pixel ratio (not a boot-time snapshot) so
+	// browser zoom re-lays out the canvas correctly.
+	const dpr = window.devicePixelRatio || 1;
 
 	const f = fit(stageW, stageH, field.widthMM, field.heightMM, 16);
 	// Snap CSS size so cssW*dpr and cssH*dpr are exact integers: backing store
@@ -185,27 +211,31 @@ function initCanvas() {
 	let cssH = Math.round(f.cssH * dpr) / dpr;
 	const w = Math.floor(cssW);
 	const h = Math.floor(cssH);
-	// Scales in CSS px per mm (ctx is scaled by dpr -> backing px/mm / dpr).
-	if (w === lastAppliedCss.w && h === lastAppliedCss.h) return;
-	lastAppliedCss = { w, h };
-	canvasW = Math.round(w * dpr);
-	canvasH = Math.round(h * dpr);
-	elCanvas.width = canvasW;
-	elCanvas.height = canvasH;
+	// canvasW/canvasH hold CSS px (the coordinate space used by pointer events,
+	// draw(), crosshair and all measurement code). Only the backing store is
+	// scaled by dpr via elCanvas.width/height + ctx.setTransform(dpr).
+	if (w === lastAppliedCss.w && h === lastAppliedCss.h && dpr === lastAppliedCss.dpr) return;
+	lastAppliedCss = { w, h, dpr };
+	canvasW = w;
+	canvasH = h;
+	elCanvas.width = Math.round(w * dpr);
+	elCanvas.height = Math.round(h * dpr);
 	elCanvas.style.width = w + 'px';
 	elCanvas.style.height = h + 'px';
 	elCanvas.style.visibility = '';
 	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 	if (ctx) ctx.imageSmoothingQuality = 'high';
-	// Scales in CSS px per mm (ctx scaled by dpr -> backing px/mm / dpr).
+	// Scales in CSS px per mm (computeScales receives CSS canvas px). No dpr
+	// division: sx/sy run in the same CSS px space as pointerToBacking().
 	// Recompute on every field change even when CSS size stays identical.
 	const s = computeScales(field, canvasW, canvasH);
-	sx = s.sx / dpr;
-	sy = s.sy / dpr;
+	sx = s.sx;
+	sy = s.sy;
 	scaleReady = true;
 }function runMigrationForCurrentField() {	// sx/sy are CSS px/mm; v1 route points live in backing px -> restore
-	// backing px/mm for the v1->v2 conversion.
-	const ppm = Math.sqrt(sx * sy) * dprAtBoot();
+	// backing px/mm for the v1->v2 conversion: backing px/mm = CSS px/mm * dpr.
+	const dpr = window.devicePixelRatio || 1;
+	const ppm = Math.sqrt(sx * sy) * dpr;
 	migrateV1toV2({ competition: selection.competition, year: selection.year, category: selection.category, pxPerMm: ppm }
 	);
 	purgeRobotDimensions();}
@@ -244,7 +274,7 @@ function drawRightTriangle(p1, p2) {	// right-triangle legs: green dashed 8/5 wi
 	ctx.font = 'bold 16px ' + LINE.font;
 	ctx.strokeStyle = LINE.halo;	ctx.lineWidth = 4;	ctx.lineJoin = 'round';
 	ctx.fillStyle = LINE.legGreen;
-	ctx.save();	const cw = ctx.canvas.width;	const ch = ctx.canvas.height;
+	ctx.save();	const cw = canvasW;	const ch = canvasH;
 	const place = (text, x, y, align, baseline) => {
 		ctx.textAlign = align;	ctx.textBaseline = baseline;
 		const tw = ctx.measureText(text).width;

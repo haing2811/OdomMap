@@ -236,7 +236,7 @@ main {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: var(--topbar-height);
+	min-height: var(--topbar-height);
 	padding: 0 var(--space-4);
 	background: var(--bg-void);
 	border-bottom: 1px solid var(--border);
@@ -754,7 +754,7 @@ input:focus-visible, select:focus-visible {
 		border-left: none;
 		overflow-y: auto;
 	}
-	.canvas-stage { padding: var(--space-2); min-height: 0; }
+	.canvas-stage { padding: var(--space-2); min-height: 0; padding-bottom: calc(min(40vh, 260px) + var(--space-2)); }
 	.topbar { padding: 0 var(--space-2); gap: var(--space-1); }
 	.modebar { height: 44px; padding: var(--space-1); gap: var(--space-1); }
 	.modebtn, .install-btn { min-height: 32px; font-size: 0.78rem; padding: var(--space-1) var(--space-1); }

@@ -14,7 +14,7 @@ export const ROBOT_ENJOYAI_MM = 300; // ENJOY AI max robot footprint 300 x 300 m
 // WRO field image aspect: 2362 / 1143 = 2.0665... matches every WRO artwork
 // (18599 x 9000 px -> 2.0666), so a single shared scale is exact for WRO fields.
 const WRO_FIELD = (year, category) => ({
-	image: `GameField/WRO/${year}/${category}.png`,
+	image: `GameField/WRO/${year}/${category}.webp`,
 	widthMM: 2362,
 	heightMM: 1143,
 	robotMaxMM: { w: ROBOT_WRO_MM, h: ROBOT_WRO_MM },
