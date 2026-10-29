@@ -40,6 +40,10 @@ let fieldImg = null;
 	let sx = 1, sy = 1;            // CSS px per mm, per axis (ctx scaled by dpr)
 	let bootDpr = window.devicePixelRatio || 1;
 	function dprAtBoot() { return bootDpr; }
+// Last CSS size the canvas was laid out at — kept at module scope so the
+// resize/re-layout guard actually holds across initCanvas calls, which
+// keeps the canvas stable (no redraw loop) at any window size.
+let lastAppliedCss = { w: -1, h: -1 };
 let scaleReady = false;
 let pendingRedraw = false;
 // ---------------------------------------------------------------------------// App state// ---------------------------------------------------------------------------
@@ -172,8 +176,6 @@ function initCanvas() {
 	const stageW = rect.width;
 	const stageH = rect.height;
 	const dpr = dprAtBoot();
-
-	let lastAppliedCss = { w: -1, h: -1 };
 
 	const f = fit(stageW, stageH, field.widthMM, field.heightMM, 16);
 	// Snap CSS size so cssW*dpr and cssH*dpr are exact integers: backing store
