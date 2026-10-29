@@ -74,34 +74,20 @@ function init() {	const boot = () => {		setupSelectionUI();		setupModeUI();		set
 			});
 		});	}
 	let deferredInstall;
-	let installPromptSeen = false;
 	window.addEventListener('beforeinstallprompt', (e) => {
 		e.preventDefault();
 		deferredInstall = e;
-		installPromptSeen = true;
-		console.info('[OdomMap PWA] beforeinstallprompt received; install button shown');
 		elInstallBtn.classList.remove('hidden');
 		elInstallBtn.addEventListener('click', () => {
 			deferredInstall.prompt();
-			deferredInstall.userChoice.then((choice) => {
-				console.info('[OdomMap PWA] install userChoice:', choice.outcome);
+			deferredInstall.userChoice.then(() => {
 				deferredInstall = null;
 				elInstallBtn.classList.add('hidden');
 			});
 		});
 	}, { once: true });
 
-	// If the browser never offers beforeinstallprompt on this origin, the PWA
-	// install UI is deferred to the browser's omnibox (per-origin engagement
-	// gating). Log so the difference between origins is observable.
-	setTimeout(() => {
-		if (!installPromptSeen) {
-			console.info('[OdomMap PWA] no beforeinstallprompt on this origin; install via browser omnibox if available');
-		}
-	}, 0);
-
 	window.addEventListener('appinstalled', () => {
-		console.info('[OdomMap PWA] appinstalled');
 		elInstallBtn.classList.add('hidden');
 	});
 }
