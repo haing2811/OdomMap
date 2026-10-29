@@ -1,0 +1,191 @@
+<title>OdomMap Rebuild — Final Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --fg: #1A1B1E;
+  --muted: #5B606B;
+  --accent: #116A86;
+  --line: #D7DEE6;
+  --danger: #B3261E;
+  /* design tokens: neutral palette with a teal accent; every color defined once here */
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0D12;
+    --fg: #F2F3F5;
+    --muted: #8A8F9C;
+    --accent: #22D3EE;
+    --line: #1A1F2A;
+    --danger: #EF4444;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B0D12;
+  --fg: #F2F3F5;
+  --muted: #8A8F9C;
+  --accent: #22D3EE;
+  --line: #1A1F2A;
+  --danger: #EF4444;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  line-height: 1.5;
+}
+h1 { font-size: 1.25rem; margin: 0 0 0.25rem; text-wrap: balance; }
+h2 { font-size: 1rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+p { margin: 0 0 0.75rem; }
+a { color: var(--accent); }
+table { border-collapse: collapse; width: 100%; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+th, td { border: 1px solid var(--line); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: var(--line); }
+ul { margin: 0.25rem 0 0.75rem 1.25rem; }
+li { margin: 0.15rem 0; }
+.tag { display: inline-block; font-size: 0.78rem; padding: 0.12rem 0.45rem; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); margin-right: 0.4rem; margin-bottom: 0.25rem; }
+.tag.ok { border-color: var(--accent); color: var(--accent); background: rgba(17,106,134,0.08); }
+.tag.blocked { border-color: var(--danger); color: var(--danger); background: rgba(179,38,30,0.08); }
+.status-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0.75rem 0; }
+.stat { border: 1px solid var(--line); padding: 0.6rem 0.85rem; border-radius: 10px; min-width: 150px; }
+.stat .big { font-size: 1.35rem; font-weight: 600; color: var(--fg); }
+.stat .lab { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+/* keep the side gutters on narrow screens; the root padding already handles it */
+@media (max-width: 400px) { body { font-size: 0.92rem; } }
+</style>
+
+<main style="max-width: 900px; margin: 0 auto; padding-top: 1rem; padding-bottom: 6rem;">
+<h1>OdomMap Rebuild — Final Report</h1>
+<p>Phase 10 report for the OdomMap rebuild (WRO + ENJOY AI field measurement &amp; odometry tool). Repo: <code>github.com/haing2811/OdomMap</code>, local <code>D:\OdomMap</code>.</p>
+
+<div class="status-grid">
+  <div class="stat"><div class="big">Complete</div><div class="lab">Build (Phase 2)</div></div>
+  <div class="stat"><div class="big blocked">Blocked</div><div class="lab">Browser verification (Phase 3)</div></div>
+  <div class="stat"><div class="big">Uncommitted</div><div class="lab">Nothing committed / pushed</div></div>
+</div>
+
+<h2>What was built</h2>
+<p>A static, single-page tool with no build step, no npm dependencies, no CDN, and no external fonts — fully offline PWA. It works at the site root and under <code>/odom-map/</code>.</p>
+<ul>
+  <li><strong>Measure mode</strong> — two-click line measurement: distance (mm), acute reference angle, wheel rotations/degrees, H/V components, edge-to-point distance.</li>
+  <li><strong>Odometry mode</strong> — origin placement, snapped 0/90/180/‑90 angle indicator, rotated axes, X/Y/angle/distance readout, Record &rarr; Python <code>(x, y)</code> tuple output, Copy to clipboard.</li>
+  <li><strong>Route mode</strong> — place waypoints, drag nodes, delete selected node (Escape cancels), save/load/unload routes.</li>
+  <li><strong>Field selection</strong> &rarr; competition &rarr; year &rarr; category, remembered and reflected in the URL (<code>?c=wro&amp;y=2026&amp;cat=elementary</code>).</li>
+  <li><strong>Storage</strong> — v2 namespaced localStorage keys (<code>odom:v2:</code>), idempotent v1 migration, wheel/grid/last-selection globals.</li>
+  <li><strong>PWA</strong> — service worker <code>odommap-v4</code>, network-first HTML, cache-first assets, field images cached at runtime; installable.</li>
+</ul>
+
+<p class="tag tag ok">Math verified: 5/5 WRO samples match HEAD exactly; ENJOY AI 1000 mm horizontal/vertical/corners verified against a Node harness.</p>
+
+<h2>Files — added, changed, deleted</h2>
+<h3>Added (new files)</h3>
+<table>
+  <tr><th>File</th><th>Role</th></tr>
+  <tr><td><code>index.html</code></td><td>Main entry: /odom-map bare-&gt;trailing-slash redirect, font preloads, CSS, module script</td></tr>
+  <tr><td><code>js/config.js</code></td><td>COMPETITIONS data model (WRO 2023–2026, ENJOY AI 2026 inventions-trail), URL/storage helpers</td></tr>
+  <tr><td><code>js/math.js</code></td><td>Separate x/y px&rarr;mm scales, distance/angle/components/wheel conversions, odometry</td></tr>
+  <tr><td><code>js/storage.js</code></td><td>v2 namespaced localStorage CRUD, idempotent v1 migration, purge of robot_dimensions</td></tr>
+  <tr><td><code>js/app.js</code></td><td>Main wiring: mode switching, pointer/drag handlers, draw loop, panels, saved lines/routes, PWA install</td></tr>
+  <tr><td><code>css/app.css</code></td><td>Design-token block, Geist/Geist Mono @font-face, layout, utilities</td></tr>
+  <tr><td><code>assets/icons/mark.svg</code>, <code>favicon.svg</code></td><td>Removed — SVG marks replaced by PNG icons</td></tr>
+  <tr><td><code>assets/icons/icon-192.png</code>, <code>icon-512.png</code></td><td>PWA icons (PIL-generated)</td></tr>
+  <tr><td><code>assets/fonts/geist/*</code>, <code>assets/fonts/geist-mono/*</code>, <code>assets/fonts/LICENSE</code></td><td>Self-hosted Geist variable Latin + Mono woff2 (4 faces) + license</td></tr>
+</table>
+
+<h3>Changed (rewritten / updated)</h3>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>OdomMap.html</code></td><td>Rewritten as thin client-side redirect to <code>./index.html</code></td></tr>
+  <tr><td><code>manifest.json</code></td><td>start_url ./index.html, scope ./, theme #22D3EE, icons</td></tr>
+  <tr><td><code>sw.js</code></td><td>Cache name odommap-v4; precaches HTML/CSS/JS/fonts/icons/SVG; runtime field-image cache</td></tr>
+  <tr><td><code>vercel.json</code></td><td>/ and /odom-map and /odom-map/ &rarr; /index.html; /odom-map/:path+ &rarr; /:path+</td></tr>
+  <tr><td><code>README.md</code></td><td>Rewritten: comps/fields table, deliberately-not-included list, offline/PWA notes</td></tr>
+  <tr><td><code>js/app.js</code></td><td>Fixed <code>field()</code> &rarr; <code>currentField()</code> in drawFieldGrid (this session)</td></tr>
+  <tr><td><code>js/storage.js</code></td><td>Removed unused getFieldSize/setFieldSize (this session)</td></tr>
+</table>
+
+<h3>Deleted (grep-proven unreferenced)</h3>
+<table>
+  <tr><th>File</th><th>Reason</th></tr>
+  <tr><td><code>Logo/iconrb.png</code></td><td>Unreferenced asset removed</td></tr>
+  <tr><td><code>slr.jpg</code></td><td>Unreferenced asset removed</td></tr>
+  <tr><td><code>astro.png</code></td><td>Unreferenced asset removed</td></tr>
+  <tr><td><code>map.png</code></td><td>Unreferenced asset removed</td></tr>
+</table>
+<p>Kept untouched: <code>Logo/WRO-2026-RM-Elementary-BI-All.pdf</code> and everything under <code>GameField/</code> (per hard rule: never rename/move/re-encode GameField assets).</p>
+
+<h2>Verification — what passed</h2>
+<ul>
+  <li><code>node --check</code> on all four JS modules: all OK.</li>
+  <li>Math parity against HEAD formulas via <code>verify-math.mjs</code>: 5/5 WRO samples match exactly; ENJOY AI 1000 mm horizontal, vertical, and corner checks verified with a local harness.</li>
+  <li>Static audit clean: no banned terms, no undefined CSS var (every <code>var(--*)</code> defined in the token block), no raw hex outside the token block, no inline <code>style=</code> attributes.</li>
+  <li>Contrast table computed from tokens: text-on-panel &ge; 4.5:1, lines-vs-field &ge; 3:1; white-on-accent fails&hellip; so chips use dark fill + ink text.</li>
+  <li>Local HTTP server on 127.0.0.1:13381 returns 200 for the entry page.</li>
+</ul>
+
+<h2 class="tag tag blocked">Blocked — browser-based checks (Phase 3, could not run)</h2>
+<p>Headless Chrome and Edge cannot run in this sandbox. Six launch approaches were attempted, all failing:</p>
+<ul>
+  <li><code>--headless=new --disable-gpu --dump-dom</code> over localhost — hangs (exit 124 = timeout).</li>
+  <li><code>--headless=old --disable-gpu --no-sandbox</code> over file:// — GPU process crashes (exit_code=-1073741819, STATUS_ACCESS_VIOLATION), then hangs.</li>
+  <li><code>--single-process --no-sandbox --disable-gpu</code> — hangs on updater named-pipe loop.</li>
+  <li>Fresh <code>--user-data-dir</code> + <code>--no-first-run --no-default-browser-check</code> — same GPU crash + hang.</li>
+  <li><code>--disable-background-networking --disable-features=UpdateService --no-check-update</code> — still hangs.</li>
+  <li>Edge <code>msedge.exe --headless=new</code> — same GPU/network-service crash, hangs.</li>
+</ul>
+<p>Root cause: this sandbox breaks Chrome's GPU subprocess and the Chrome updater named-pipe connection, which retry indefinitely and keep the process alive. No command-line flag combination avoided it. This is an environment limitation, not an app defect.</p>
+<p>The following Phase 3 checks remain outstanding and require a working browser (or a real hosting service with rewrite rules):</p>
+<ul>
+  <li>Headless screenshot at 1440x900 and at 390 px wide.</li>
+  <li>Console-errors check (&lt;2 s load, no stuck <code>#loading</code>).</li>
+  <li>/odom-map/ subpath serve test (needs Vercel or equivalent rewrite; vercel.json rules verified statically).</li>
+  <li>Offline-after-one-visit PWA test (needs browser + ServiceWorker).</li>
+  <li>Mobile 390 px bottom sheet and accessibility pass (the CSS media query exists but is untested).</li>
+</ul>
+<p>In lieu of browser verification, the following were verified statically instead:</p>
+<ul>
+  <li><code>node --check</code> on all 4 JS modules: all OK.</li>
+  <li>Module import/export consistency (config/math/storage/app): all imported symbols exist.</li>
+  <li>DOM ID cross-check (app.js <code>sel()</code> refs vs index.html + dynamically built panels): every access null-guarded (<code>?.</code>, <code>if (b)</code>, <code>if (!e)</code>); no null-reference crash path on load or draw.</li>
+  <li>vercel.json rewrite rules: no redirect loop; <code>/odom-map/:path+</code> maps assets correctly.</li>
+  <li>Math parity vs HEAD via <code>verify-math.mjs</code>: 5/5 WRO samples exact; ENJOY AI horizontal/vertical/corners verified with a Node harness.</li>
+  <li>Static audit clean: no banned terms, no undefined CSS var, no raw hex outside the token block, no inline <code>style=</code> attributes.</li>
+</ul>
+
+<h2>Guesses &amp; assumptions made during the build</h2>
+<ul>
+  <li>WRO fields: image aspect (18599&times;9000 &asymp; 2.0666) equals field aspect (2362/1143 &asymp; 2.0665), so one shared scale is exact for WRO.</li>
+  <li>ENJOY AI: separate x/y scales because image aspect (1823&times;1022 &asymp; 1.7838) differs from field aspect (2160/1200 = 1.8000).</li>
+  <li>v1 routes stored in canvas pixels without the save-time scale cannot be reliably back-converted&mdash;imported as approximate at current scale, flagged in the UI/data.</li>
+  <li>OdomMap.html kept as a thin client-side redirect rather than removed.</li>
+  <li>Image border-frame calibration (<code>imageBoundsPx</code>) intentionally left uncalibrated (TODO in config.js).</li>
+  <li>No start box, no robot customization, no HyperLib link&mdash;per product decision.</li>
+  <li>Angle-of-change feature is absent in HEAD and was flagged, not built.</li>
+</ul>
+
+<h2>To-dos remaining</h2>
+<ol>
+  <li>Resume Phase 3 browser verification (screenshots, /odom-map/ serve, offline PWA load, console errors) once a working browser is available.</li>
+  <li>Test the mobile 390 px bottom sheet and accessibility.</li>
+  <li>Write the migration-outcome note into documentation/release context if a release is cut.</li>
+</ol>
+
+<h2>Hard rules reminder</h2>
+<ul>
+  <li>Nothing is committed, pushed, branched, stashed, reset, checked out, or restored. All changes sit uncommitted in the working tree.</li>
+  <li>No build step, framework, npm dependency, CDN, or web font from another origin in the repo.</li>
+  <li>PWA is fully offline; all asset paths are relative and case-sensitive paths match disk exactly.</li>
+  <li>Throwaway scripts and test output live outside the repo (<code>$env:TEMP\odom-scratch</code>); none were left in the repo.</li>
+</ul>
+
+<p style="margin-top:1.5rem; color:var(--muted); font-size:0.85rem;">
+Unofficial tool, not affiliated with WRO or ENJOY AI; field images belong to their organizers. MIT &mdash; see LICENSE.
+</p>
+</main>

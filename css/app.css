@@ -1,0 +1,829 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   OdomMap design tokens — every var(--*) used in this app is defined here.
+   No raw hex anywhere else. No inline styles.
+   ========================================================================== */
+
+/* Token block (single source of truth). */
+:root {
+	/* Backgrounds (neutral graphite — true gray, not blue-navy) */
+	--bg-void: #0A0A0B;
+	--bg-panel: #131315;
+	--bg-field: #161618;
+	--bg-chip: #1E1E20;
+
+	/* Borders */
+	--border: #27272A;
+	--border-focus: #6B7280;
+
+	/* Text */
+	--ink: #EAEAEA;
+	--fg-muted: #757575;
+
+	/* Line roles (each role: own color AND own dash/marker).
+	   Red is reserved for canvas measure/route lines; blue for angles only.
+	   UI itself carries no accent color. */
+	--line-measure: #EF4444;   /* red — canvas measure & route lines only */
+	--line-halo: #FFFFFF;      /* white casing around red lines */
+	--line-current: #EF4444;   /* active measure line */
+	--line-earlier: #9CA3AF;   /* earlier/completed lines */
+	--angle-blue: #2563EB;     /* blue — angle arcs & angle labels only */
+	--angle-arc: #2563EB;
+	--edge-line: #9CA3AF;      /* edge-measure helper lines (dashed) */
+	--odometry-axis: #9CA3AF;  /* odometry rotated axes (dashed) */
+	--route-line: #EF4444;     /* route segments (all lines red) */
+	--crosshair: #6B7280;      /* neutral crosshair (opacity applied in JS) */
+	--helper: #F59E0B;         /* helper geometry: right-triangle legs (dashed) */
+	--helper-halo: #111827;    /* dark halo for helper geometry */
+	--angle-text-fill: #2563EB;    /* angle label fill */
+	--angle-text-outline: #FFFFFF; /* angle label outline */
+	--distance-text-fill: #FFFFFF; /* distance label fill */
+	--distance-text-outline: #EF4444; /* distance label outline */
+
+	/* Button styles (neutral — no accent) */
+	--btn-primary-bg: #6B7280;
+	--btn-primary-text: #FFFFFF;
+	--btn-secondary-bg: transparent;
+	--btn-secondary-border: var(--border);
+	--btn-secondary-text: var(--ink);
+	--btn-danger-bg: var(--line-measure);
+	--btn-danger-text: var(--ink);
+	--btn-ghost-bg: transparent;
+	--btn-ghost-border: var(--border);
+	--btn-ghost-text: var(--ink);
+
+	/* Switch (accessible role="switch" control; red reserved for canvas lines only) */
+	--switch-track-off: #616161;   /* off track fill: >=3:1 vs --bg-void (#0A0A0B) = 3.20:1 */
+	--switch-track-on: #6B7280;    /* on track fill; distinct from off via position + fill */
+	--switch-knob: #EAEAEA;        /* knob, moves left (off) / right (on) */
+	--switch-track-border: var(--border);
+
+	/* Surfaces (derived shades; all hex lives in this token block) */
+	--surface-hover: #1F1F21;      /* hover / active surface */
+	--surface-hover-strong: #27272A; /* stronger hover */
+	--surface-panel-header: #0D0D0E; /* section header background */
+	--surface-elevated: #232325;   /* slightly elevated surface */
+	--text-on-accent: #0A0A0B;     /* text on accent color */
+
+	/* Utility spacing */
+	--font-ui: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'Segoe UI Mono',
+		'Liberation Mono', Consolas, monospace;
+
+	/* Scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--radius: 8px;
+	--panel-width: 320px;
+	--topbar-height: 56px;
+	--line-width-current: 3px;
+	--line-width-earlier: 2px;
+	--line-width-helper: 2px;
+	--dash-helper: [6, 5];
+	--dash-edge: [6, 5];
+	--dash-axis: [6, 5];
+	--touch-target: 44px;
+}
+
+/* Dark mode. No light mode — single dark theme. */
+:root[data-theme="dark"], :root:not([data-theme="light"]) {
+	/* tokens above already define dark values */
+}
+
+:root[data-theme="light"] {
+	--bg-void: #F5F7FA;
+	--bg-panel: #FFFFFF;
+	--bg-field: #FFFFFF;
+	--bg-chip: #EEF2F6;
+	--border: #C9D2DE;
+	--border-focus: #6B7280;
+	--ink: #111827;
+	--fg-muted: #6B7280;
+	--btn-primary-text: #0B0D12;
+	--btn-secondary-text: #111827;
+	--btn-danger-text: #FFFFFF;
+	--btn-ghost-text: #111827;
+}
+
+/* Utility classes (replaces inline styles) */
+.d-none { display: none !important; }
+.mt-2 { margin-top: var(--space-2); }
+.mt-auto { margin-top: auto; }
+
+/* Python output textarea */
+.py-output {
+	width: 100%;
+	height: 72px;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	color: var(--fg-muted);
+	border-radius: var(--radius);
+	padding: 6px;
+	resize: vertical;
+}
+
+/* Reset */
+*, *::before, *::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html, body {
+	height: 100dvh;
+	overflow: hidden;
+}
+
+body {
+	display: grid;
+	grid-template-rows: auto auto minmax(0, 1fr);
+	font-family: var(--font-ui);
+	background: var(--bg-void);
+	color: var(--ink);
+	font-size: 0.95rem;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	min-height: 0;
+}
+
+main {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) var(--panel-width);
+	min-height: 0;
+}
+
+/* ==========================================================================
+   Fonts (self-hosted, latin subset, font-display: swap). Preloaded in HTML.
+   ========================================================================== */
+@font-face {
+	font-family: 'Geist';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../assets/fonts/geist/geist-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Geist';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../assets/fonts/geist/geist-latin-wght-italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Geist Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../assets/fonts/geist-mono/geist-mono-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Geist Mono';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../assets/fonts/geist-mono/geist-mono-latin-wght-italic.woff2') format('woff2');
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+#loading {
+	position: fixed;
+	inset: 0;
+	background: var(--bg-void);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	z-index: 50;
+}
+
+#loading.hidden {
+	display: none !important;
+}
+
+.spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid var(--border);
+	border-top-color: var(--fg-muted);
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+	margin-bottom: var(--space-2);
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+#loading p {
+	color: var(--fg-muted);
+	font-size: 0.85rem;
+}
+
+.topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--topbar-height);
+	padding: 0 var(--space-4);
+	background: var(--bg-void);
+	border-bottom: 1px solid var(--border);
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	z-index: 10;
+}
+
+.topbar h1 {
+	font-size: 1rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: var(--ink);
+	font-family: var(--font-ui);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.topbar .field-group {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.topbar label {
+	font-size: 0.75rem;
+	color: var(--fg-muted);
+	letter-spacing: 0.02em;
+	margin-right: var(--space-1);
+}
+
+.topbar select,
+.topbar input[type="number"] {
+	font-family: var(--font-ui);
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	color: var(--ink);
+	border-radius: var(--radius);
+	padding: var(--space-1) var(--space-2);
+	font-size: 0.85rem;
+	min-height: 36px;
+}
+
+.topbar input[type="number"] {
+	width: 72px;
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+.modebar {
+	display: flex;
+	align-items: stretch;
+	height: var(--topbar-height);
+	background: var(--bg-panel);
+	border-bottom: 1px solid var(--border);
+	gap: var(--space-1);
+	padding: var(--space-1);
+}
+
+.modebtn {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-1);
+	border: 1px solid var(--border);
+	background: var(--bg-void);
+	color: var(--fg-muted);
+	font-family: var(--font-ui);
+	font-size: 0.85rem;
+	border-radius: var(--radius);
+	cursor: pointer;
+	min-height: 36px;
+	transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.modebtn:hover {
+	background: var(--surface-hover);
+	border-color: var(--border-focus);
+	color: var(--ink);
+}
+
+.modebtn.active {
+	background: var(--surface-hover-strong);
+	color: var(--ink);
+	border-color: var(--border-focus);
+	font-weight: 600;
+}
+
+.modebtn:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+}
+
+.install-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-1);
+	border: 1px solid var(--border);
+	background: var(--bg-chip);
+	color: var(--fg-muted);
+	font-family: var(--font-ui);
+	font-size: 0.8rem;
+	border-radius: var(--radius);
+	cursor: pointer;
+	padding: var(--space-1) var(--space-2);
+	min-height: 36px;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.install-btn:hover {
+	background: var(--surface-elevated);
+	border-color: var(--border-focus);
+	color: var(--ink);
+}
+
+.install-btn.hidden { display: none !important; }
+
+.install-btn:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+}
+
+.canvas-stage {
+	flex: 1;
+	position: relative;
+	background: var(--bg-field);
+	overflow: hidden;
+	min-width: 0;
+	min-height: 0;
+}
+
+#canvas-container {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	border: 1px solid var(--border);
+	background: var(--bg-field);
+	touch-action: none;
+	outline: none;
+}
+
+#canvas-container:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+}
+
+#canvas {
+	display: block;
+	cursor: crosshair;
+	border: 0;
+}
+
+.panel {
+	width: var(--panel-width);
+	min-width: 0;
+	background: var(--bg-panel);
+	border-left: 1px solid var(--border);
+	overflow-y: auto;
+}
+
+.panel-inner {
+	padding: var(--space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+}
+
+.section {
+	background: var(--bg-void);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+.section-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-2) var(--space-3);
+	background: var(--surface-panel-header);
+	border-bottom: 1px solid var(--border);
+	cursor: pointer;
+	user-select: none;
+}
+
+.section-header h3 {
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+	color: var(--fg-muted);
+	font-weight: 600;
+	font-family: var(--font-ui);
+}
+
+.section-body {
+	padding: var(--space-3);
+	display: none; /* closed by default; open via .open */
+}
+
+.section.open .section-body { display: block; }
+
+.section-toggle {
+	width: 16px;
+	height: 16px;
+	border: 1px solid var(--border);
+	border-radius: 3px;
+	background: var(--bg-chip);
+	color: var(--fg-muted);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	line-height: 1;
+}
+
+.section.open .section-toggle::before { content: '−'; }
+.section:not(.open) .section-toggle::before { content: '+'; }
+
+/* ==========================================================================
+   Controls
+   ========================================================================== */
+.control-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
+	font-size: 0.85rem;
+}
+
+.control-row label {
+	color: var(--ink);
+	font-size: 0.85rem;
+}
+
+.control-row .value {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	color: var(--ink);
+	font-size: 0.9rem;
+}
+
+input[type="number"], input[type="text"], select {
+	font-family: var(--font-ui);
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	color: var(--ink);
+	border-radius: var(--radius);
+	padding: var(--space-1) var(--space-2);
+	font-size: 0.85rem;
+	min-height: 34px;
+	width: 100%;
+}
+
+input[type="number"] { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+input:focus-visible, select:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+	border-color: var(--border-focus);
+}
+
+/* Toggle */
+.toggle-item {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-size: 0.85rem;
+	color: var(--ink);
+	cursor: pointer;
+	margin-bottom: var(--space-1);
+}
+
+/* Switch (replaces the default checkbox) */
+.toggle-item input[type="checkbox"] {
+	appearance: none;
+	position: relative;
+	width: 44px;
+	height: 24px;
+	background: var(--border);
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background 0.2s;
+	outline: none;
+}
+.toggle-item input[type="checkbox"]::before {
+	content: '';
+	position: absolute;
+	top: 3px; left: 3px;
+	width: 18px; height: 18px;
+	background: var(--ink);
+	border-radius: 50%;
+	transition: transform 0.2s;
+}
+.toggle-item input[type="checkbox"]:checked {
+	background: var(--border-focus);
+}
+.toggle-item input[type="checkbox"]:checked::before {
+	transform: translateX(20px);
+}
+.toggle-item input[type="checkbox"]:focus-visible {
+	box-shadow: 0 0 0 2px var(--border-focus);
+	border-radius: 999px;
+}
+.toggle-item:focus-visible {
+	outline: none;
+}
+
+.toggle-item:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: var(--radius);
+	cursor: pointer;
+	font-family: var(--font-ui);
+	font-size: 0.85rem;
+	font-weight: 600;
+	padding: var(--space-1) var(--space-3);
+	min-height: 36px;
+	min-width: 88px;
+	transition: opacity 0.15s, transform 0.05s;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+	background: var(--btn-primary-bg);
+	color: var(--btn-primary-text);
+}
+
+.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+
+.btn-secondary {
+	background: var(--btn-secondary-bg);
+	border: 1px solid var(--btn-secondary-border);
+	color: var(--btn-secondary-text);
+}
+
+.btn-secondary:hover:not(:disabled) { background: var(--surface-hover-strong); }
+
+.btn-danger {
+	background: var(--btn-danger-bg);
+	color: var(--btn-danger-text);
+}
+
+.btn-ghost {
+	background: var(--btn-ghost-bg);
+	border: 1px solid var(--btn-ghost-border);
+	color: var(--btn-ghost-text);
+}
+
+.btn-ghost:hover:not(:disabled) { background: var(--surface-hover-strong); }
+
+.btn-full { width: 100%; }
+.btn-small { padding: var(--space-1) var(--space-2); min-height: 32px; min-width: auto; font-size: 0.8rem; }
+
+.btn-group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+	gap: var(--space-2);
+	margin-top: var(--space-2);
+}
+
+/* Flex column button stack (avoid) — kept minimal */
+.col { display: flex; flex-direction: column; gap: var(--space-1); }
+
+/* ==========================================================================
+   Measurements / readouts
+   ========================================================================== */
+.readout {
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-2);
+	padding: var(--space-1) 0;
+	border-bottom: 1px solid var(--border);
+	font-size: 0.85rem;
+}
+
+.readout:last-child { border-bottom: none; }
+
+.readout kbd {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	color: var(--ink);
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
+.readout .label { color: var(--fg-muted); font-size: 0.8rem; }
+
+/* Label chips (dark fill, ink text; accent dot indicator) */
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--ink);
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.8rem;
+	padding: var(--space-1) var(--space-2);
+}
+
+.chip .dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	border: 1px solid rgba(255,255,255,0.35);
+}
+
+
+/* ==========================================================================
+   Saved items lists
+   ========================================================================== */
+.saved-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: var(--space-1) var(--space-2);
+	margin-bottom: var(--space-1);
+	font-size: 0.8rem;
+}
+
+.saved-item .name { color: var(--ink); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.saved-item .meta { color: var(--fg-muted); font-size: 0.72rem; }
+
+.empty {
+	color: var(--fg-muted);
+	font-size: 0.78rem;
+	text-align: center;
+	padding: var(--space-3);
+	background: var(--bg-chip);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+/* Edge buttons group (top/left/right/bottom) */
+.edge-group {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--space-1);
+	margin-top: var(--space-1);
+}
+
+.edge-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--border);
+	background: var(--bg-chip);
+	color: var(--ink);
+	border-radius: var(--radius);
+	font-family: var(--font-ui);
+	font-size: 0.78rem;
+	cursor: pointer;
+	padding: var(--space-1) 0;
+}
+
+.edge-btn:hover:not(.active) { background: var(--surface-hover-strong); border-color: var(--border-focus); }
+.edge-btn.active {
+	background: var(--line-measure);
+	color: var(--ink);
+	border-color: var(--line-measure);
+	font-weight: 600;
+}
+
+.edge-btn.top { grid-column: 1 / 3; }
+.edge-btn.bottom { grid-column: 1 / 3; }
+
+/* ==========================================================================
+   Footer + note
+   ========================================================================== */
+.field-note {
+	font-size: 0.75rem;
+	color: var(--line-measure);
+	border: 1px solid var(--line-measure);
+	background: color-mix(in srgb, var(--line-measure) 8%, transparent);
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--radius);
+	margin-bottom: var(--space-2);
+	text-align: center;
+}
+
+
+/* ==========================================================================
+   Mobile bottom sheet (390 px)
+   ========================================================================== */
+@media (max-width: 640px) {
+	main { grid-template-columns: 1fr; }
+	.panel {
+		position: fixed;
+		left: 0; right: 0; bottom: 0;
+		height: 40vh; max-height: 260px;
+		border-top: 1px solid var(--border);
+		border-left: none;
+		overflow-y: auto;
+	}
+	.canvas-stage { padding: var(--space-2); min-height: 0; }
+	.topbar { padding: 0 var(--space-2); gap: var(--space-1); }
+	.modebar { height: 44px; padding: var(--space-1); gap: var(--space-1); }
+	.modebtn, .install-btn { min-height: 32px; font-size: 0.78rem; padding: var(--space-1) var(--space-1); }
+	.topbar select, .topbar input[type="number"] { padding: var(--space-1); font-size: 0.8rem; min-height: 32px; }
+	.topbar input[type="number"] { width: 56px; }
+	}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+	.spinner { animation: none; }
+	.switch, .switch::before { transition: none !important; }
+}
+
+/* Accessible switch (role="switch") used by the View section. */
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 36px;
+	height: 20px;
+	border: 1px solid var(--switch-track-border);
+	border-radius: 999px;
+	background: var(--switch-track-off);
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+.switch::before {
+	content: '';
+	position: absolute;
+	top: 2px; left: 2px;
+	width: 14px; height: 14px;
+	background: var(--switch-knob);
+	border-radius: 50%;
+	transition: transform 0.15s, background 0.15s;
+}
+.switch[aria-checked="true"] {
+	background: var(--switch-track-on);
+	border-color: var(--switch-track-on);
+}
+.switch[aria-checked="true"]::before { transform: translateX(16px); }
+.switch:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+	border-radius: 999px;
+}
+
+/* View section (subsection inside the Measure panel). */
+.view-section { border-top: 1px solid var(--border); margin-top: var(--space-3); padding-top: var(--space-3); }
+.view-heading {
+	margin: 0 0 var(--space-2) 0;
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+	color: var(--fg-muted);
+	font-weight: 600;
+	font-family: var(--font-ui);
+}
+.view-row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-height: 40px;
+	padding: var(--space-1) 0;
+	cursor: pointer;
+}
+.view-hint { color: var(--fg-muted); font-size: 0.78rem; }
+.view-row .switch { margin-left: auto; }
+
+/* Readouts: muted en-dash placeholder value + quiet unit tone. */
+.readout .value { color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.readout .value.filled { color: var(--ink); }
+.readout .unit { color: var(--fg-muted); font-size: 0.78rem; }
+
+/* Topbar selects size to content so long category labels (e.g. "Inventions trail") show fully. */
+.topbar select { width: auto; min-width: 120px; }

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/odom-map", "destination": "/index.html" },
+    { "source": "/odom-map/", "destination": "/index.html" },
+    { "source": "/odom-map/:path+", "destination": "/:path+" }
+  ]
+}
