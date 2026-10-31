@@ -95,6 +95,20 @@ export function setLastSelection(competition, year, category) {
 	return setGlobal('lastSelection', { competition, year, category });
 }
 
+// Odometry in-progress session (per field, versioned).
+export function getOdoSession(competition, year, category) {
+	const key = `${V2(competition, year, category)}:odo-session`;
+	return safeGet(key, null);
+}
+export function saveOdoSession(competition, year, category, session) {
+	const key = `${V2(competition, year, category)}:odo-session`;
+	return safeSet(key, session);
+}
+export function clearOdoSession(competition, year, category) {
+	const key = `${V2(competition, year, category)}:odo-session`;
+	return safeRemove(key);
+}
+
 // ------------------------------------------------------------------
 // Migration (idempotent, try/catch, copies old data leaving v1 keys intact)
 // ------------------------------------------------------------------

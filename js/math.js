@@ -88,3 +88,88 @@ export function edgeDistances(xPx, yPx, canvasWpx, canvasHpx, sx, sy) {
 		right: toMMx(canvasWpx - xPx, sx),
 	};
 }
+
+// ---------------------------------------------------------------------------
+// Odometry coordinate convention (mm, field coords: x right, y down).
+// All stored data stays in mm; px<->mm conversion happens per axis via sx/sy
+// only at the pointer/draw boundary. Heading h: 0 = screen up, clockwise
+// positive, normalized to (-180, 180].
+//
+// Forward unit f = (sin h, -cos h); Right unit r = (cos h, sin h).
+// For a field point P relative to origin O (d = P - O):
+//   Y = d . f = dx*sin h - dy*cos h   (forward)
+//   X = d . r = dx*cos h + dy*sin h   (right of the heading)
+// The (X,Y) matrix [[cos,sin],[sin,-cos]] is symmetric and self-inverse, so
+// (X,Y) -> field mm round-trips exactly.
+// This matches the HEAD rotated-coordinate formulas (same products of cos/sin).
+// ---------------------------------------------------------------------------
+
+const DEG = Math.PI / 180;
+
+// Normalize a heading to (-180, 180].
+export function normalizeHeading(h) {
+	let a = ((h % 360) + 360) % 360; // [0, 360)
+	if (a > 180) a -= 360;          // (-180, 180]
+	return a;
+}
+
+// Forward and right unit vectors for a heading (screen coords, y down).
+export function headingVectors(hDeg) {
+	const h = normalizeHeading(hDeg) * DEG;
+	return {
+		f: { x: Math.sin(h), y: -Math.cos(h) }, // forward (screen up at h = 0)
+		r: { x: Math.cos(h), y: Math.sin(h) },  // right of the heading
+	};
+}
+
+// Canvas px -> odometry (X, Y) mm relative to origin in the heading frame.
+export function fieldToXY(px, py, originPx, originPy, headingDeg, sx, sy) {
+	const dx = toMMx(px - originPx, sx);
+	const dy = toMMy(py - originPy, sy);
+	const { f, r } = headingVectors(headingDeg);
+	return {
+		X: dx * r.x + dy * r.y,
+		Y: dx * f.x + dy * f.y,
+	};
+}
+
+// Odometry (X, Y) mm -> field mm (inverse of fieldToXY; self-inverse reflection).
+export function XYToFieldMm(X, Y, originMm, headingDeg) {
+	const { f, r } = headingVectors(headingDeg);
+	const dx = X * r.x + Y * f.x;
+	const dy = X * r.y + Y * f.y;
+	return { x: originMm.x + dx, y: originMm.y + dy };
+}
+
+// Distance from the origin to a point, mm.
+export function distanceFromOrigin(X, Y) { return Math.hypot(X, Y); }
+
+// Bearing from the heading, degrees, clockwise positive.
+export function bearingFromHeading(X, Y) {
+	return normalizeHeading(Math.atan2(X, Y) * 180 / Math.PI);
+}
+
+// Absolute heading (0 = screen up, clockwise positive) of travel from A to B.
+export function segmentHeading(ax, ay, bx, by) {
+	return normalizeHeading(Math.atan2(bx - ax, -(by - ay)) * 180 / Math.PI);
+}
+
+// Segment length between two field points, mm (anisotropy-aware via sx/sy).
+export function segmentLength(ax, ay, bx, by, sx, sy) {
+	return calculateDistance({ x: ax, y: ay }, { x: bx, y: by }, sx, sy);
+}
+
+// Signed turn at a point: change from previous direction to this direction,
+// normalized to (-180, 180], clockwise positive. For the first segment the
+// "previous direction" is the origin heading.
+export function turnAtPoint(prevHeadingDeg, thisHeadingDeg) {
+	return normalizeHeading(thisHeadingDeg - prevHeadingDeg);
+}
+
+// Rotate a stored (X, Y) point by deltaDeg about the origin (standard rotation).
+export function rotateXY(X, Y, deltaDeg) {
+	const d = normalizeHeading(deltaDeg) * DEG;
+	const c = Math.cos(d);
+	const s = Math.sin(d);
+	return { X: X * c - Y * s, Y: X * s + Y * c };
+}
